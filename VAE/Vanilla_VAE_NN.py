@@ -135,7 +135,7 @@ class Vanilla_VAE(nn.Module):
                 inputs = raw_inputs.view(1,self.mb_size,self.x_dim)
         
                 # wrap them in Variable
-                inputs, labels = Variable(torch.FloatTensor(1*(inputs.numpy()>0.5))), Variable(labels)
+                inputs, labels = Variable(inputs), Variable(labels)
         
                 # zero the parameter gradients
                 optimizer.zero_grad()
