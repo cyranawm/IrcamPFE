@@ -12,9 +12,7 @@ use_cuda = True
 from VAE.Vanilla_VAE_NN import Vanilla_VAE
 #from Bernoulli_VAE import Bernoulli_VAE
 #from VAE.Bernoulli_VAE_NN import Bernoulli_VAE
-from tensorboardX import SummaryWriter
 
-from scipy.io import loadmat
 
 from visualize import visu_recon
 
