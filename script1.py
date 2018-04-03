@@ -74,9 +74,16 @@ if use_cuda:
 trainloader = load_MNIST(vae1.mb_size)
 testloader = test_MNIST()
 
-vae1.train(trainloader, 2)
+vae1.train(trainloader, 10)
 
-visu_recon(1,testloader,vae1)
+if use_cuda:
+    vae1.cpu()
+
+name = 'test1'
+savepath = 'results/'+name
+torch.save(vae1.state_dict(), savepath)
+
+#visu_recon(1,testloader,vae1)
 
 #for param in list(vae1.named_parameters()):
 #    if (param[1].data.numpy().any() == np.nan or  abs(param[1].data.numpy()).any() == np.inf):
