@@ -18,9 +18,6 @@ import torch.nn.functional as F
 
 import torch.utils.data as data_utils
 
-if tensorboard:
-    import tensorboardX
-    from tensorboardX import SummaryWriter
 
 import torch.optim as optim
 import matplotlib.pyplot as plt
@@ -45,10 +42,14 @@ def value_test(x):
 
 class Bernoulli_VAE(nn.Module):
     
-    def __init__(self, x_dim, h_dim, z_dim, mb_size = 100, tensorboard = False):
+    def __init__(self, x_dim, h_dim, z_dim, mb_size = 100, use_cuda = False, use_tensorboard = False):
         super(Bernoulli_VAE, self).__init__()
         
-        if tensorboard:
+        if use_tensorboard:
+
+            import tensorboardX
+            from tensorboardX import SummaryWriter
+            
             self.tensorboard = True
             self.writer = SummaryWriter()
         

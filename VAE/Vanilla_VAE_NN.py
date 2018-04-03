@@ -17,8 +17,7 @@ import torch.nn.functional as F
 
 import torch.utils.data as data_utils
 
-import tensorboardX
-from tensorboardX import SummaryWriter
+
 
 import torch.optim as optim
 import matplotlib.pyplot as plt
@@ -43,10 +42,15 @@ def value_test(x):
 
 class Vanilla_VAE(nn.Module):
     
-    def __init__(self, x_dim, h_dim, z_dim, mb_size = 100, use_cuda = False):
+    def __init__(self, x_dim, h_dim, z_dim, mb_size = 100, use_cuda = False, use_tensorboard = False):
         super(Vanilla_VAE, self).__init__()
         
-        self.writer = SummaryWriter()
+        if use_tensorboard:
+            import tensorboardX
+            from tensorboardX import SummaryWriter
+            
+            self.tensorboard = True
+            self.writer = SummaryWriter()
         
         #PARAMS
         self.x_dim = x_dim
@@ -139,13 +143,14 @@ class Vanilla_VAE(nn.Module):
 
                 loss = self.B_loss(x, x_recon, z_mu, z_var)
                 
-                #TENSORBOARD VISUALIZATION
-                for name, param in self.named_parameters():
-                    self.writer.add_histogram(name, param.clone().cpu().data.numpy(), iter)
-                    
-                self.writer.add_scalars('losses', {'loss': loss[0].data[0],
-                                                   'Recon_loss': loss[1].data[0],
-                                                   'KL_loss': loss[2].data[0]}, iter)
+                if self.tensorboard:
+                    #TENSORBOARD VISUALIZATION
+                    for name, param in self.named_parameters():
+                        self.writer.add_histogram(name, param.clone().cpu().data.numpy(), iter)
+                        
+                    self.writer.add_scalars('losses', {'loss': loss[0].data[0],
+                                                       'Recon_loss': loss[1].data[0],
+                                                       'KL_loss': loss[2].data[0]}, iter)
                 
                 # BACKPROP
                 loss[0].backward()
@@ -160,8 +165,8 @@ class Vanilla_VAE(nn.Module):
                 print('[%d, %5d] \n loss: %.3f \n recon_loss: %.3f \n KLloss: %.3f \n -----------------' %
                           (epoch + 1, i + 1, running_loss / 100, recon_loss/100, KLloss/100 ))
                 running_loss, recon_loss, KLloss = 0.0, 0.0, 0.0
-        
-        self.writer.close()
+        if self.tensorboard:
+            self.writer.close()
         print("Finished")
         return True
 
