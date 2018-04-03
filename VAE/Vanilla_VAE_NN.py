@@ -30,8 +30,6 @@ def xavier_init(size):
 
 def sample_z(mu, log_var, mb_size, Z_dim, use_cuda):
     # Using reparameterization trick to sample from a gaussian
-    eps = Variable(torch.randn(mb_size, Z_dim))
-    res = mu + torch.exp(log_var / 2) * eps
     
     if use_cuda:
         eps = Variable(torch.randn(mb_size, Z_dim))
