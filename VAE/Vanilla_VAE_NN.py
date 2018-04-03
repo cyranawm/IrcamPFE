@@ -95,7 +95,7 @@ class Vanilla_VAE(nn.Module):
 
     def G_loss(self, x, x_recon_mu, x_recon_var, z_mu, z_var):
         
-        recon = torch.log(2 * np.pi * x_recon_var) + (x-x_recon_mu).pow(2).div(x_recon_var + 1e-7)
+        recon= torch.log(2 * np.pi * x_recon_var + 1e-10) + (x-x_recon_mu).pow(2).div(x_recon_var + 1e-10)
         recon = 0.5 * torch.sum(recon)
         recon /= (self.mb_size * self.x_dim)
     
@@ -116,7 +116,7 @@ class Vanilla_VAE(nn.Module):
     
     def train(self, trainloader, n_epoch):
         
-        optimizer = optim.Adam(self.parameters(), lr=0.001)
+        optimizer = optim.Adam(self.parameters(), lr=0.0001)
         running_loss, recon_loss, KLloss = 0.0, 0.0, 0.0
         
 #        dummy_input = Variable(torch.rand(13, 1, 28, 28))
