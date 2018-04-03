@@ -34,7 +34,11 @@ def sample_z(mu, log_var, mb_size, Z_dim, use_cuda):
     res = mu + torch.exp(log_var / 2) * eps
     
     if use_cuda:
-        res = res.cuda()
+        eps = Variable(torch.randn(mb_size, Z_dim))
+        res = mu + torch.exp(log_var / 2).cuda() * eps.cuda()
+    else:
+        eps = Variable(torch.randn(mb_size, Z_dim))
+        res = mu + torch.exp(log_var / 2) * eps
     
     return res
 
