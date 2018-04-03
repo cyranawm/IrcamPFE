@@ -28,10 +28,15 @@ def xavier_init(size):
     xavier_stddev = 1 / np.sqrt(in_dim / 2.)
     return torch.randn(*size) * xavier_stddev
 
-def sample_z(mu, log_var, mb_size, Z_dim):
+def sample_z(mu, log_var, mb_size, Z_dim, use_cuda):
     # Using reparameterization trick to sample from a gaussian
     eps = Variable(torch.randn(mb_size, Z_dim))
-    return mu + torch.exp(log_var / 2) * eps
+    res = mu + torch.exp(log_var / 2) * eps
+    
+    if use_cuda:
+        res = res.cuda()
+    
+    return res
 
 def value_test(x):
     if (np.nan in x.data.numpy() or np.inf in abs(x.data.numpy())):
@@ -138,7 +143,7 @@ class Vanilla_VAE(nn.Module):
                     x = x.cuda()
                 
                 z_mu, z_var = self.encode(x)
-                z = sample_z(z_mu,z_var, self.mb_size, self.z_dim) 
+                z = sample_z(z_mu,z_var, self.mb_size, self.z_dim, self.use_cuda) 
                 x_recon_mu, x_recon_var = self.decode(z)
 
                 loss = self.G_loss(x, x_recon_mu, x_recon_var, z_mu, z_var)
