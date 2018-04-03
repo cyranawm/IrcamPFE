@@ -14,7 +14,7 @@ from VAE.Vanilla_VAE_NN import Vanilla_VAE
 #from VAE.Bernoulli_VAE_NN import Bernoulli_VAE
 
 
-from visualize import visu_recon
+#from visualize import visu_recon
 
 
 import numpy as np

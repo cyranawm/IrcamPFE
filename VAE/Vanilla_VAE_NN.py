@@ -68,7 +68,7 @@ class Vanilla_VAE(nn.Module):
         self.hx_mu = nn.Linear(h_dim, x_dim)
         self.hx_var = nn.Linear(h_dim, x_dim)
         
-        self.cuda = use_cuda
+        self.use_cuda = use_cuda
 
 
         
@@ -104,7 +104,7 @@ class Vanilla_VAE(nn.Module):
             z = sample_z(z_mu,z_var, self.mb_size, self.z_dim) 
         else :
             z = z_mu
-        x_recon = self.decode(z_mu)
+        x_recon = self.decode(z)
         return x_recon[0]
     
     def train(self, trainloader, n_epoch):
@@ -134,7 +134,7 @@ class Vanilla_VAE(nn.Module):
                 optimizer.zero_grad()
             
                 x = inputs
-                if self.cuda:
+                if self.use_cuda:
                     x = x.cuda()
                 
                 z_mu, z_var = self.encode(x)
