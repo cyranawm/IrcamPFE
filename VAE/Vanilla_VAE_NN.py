@@ -20,7 +20,7 @@ import torch.utils.data as data_utils
 
 
 import torch.optim as optim
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 def xavier_init(size):
     """Xavier init to initialize Tensor in Encoder/Decoder's nets"""
