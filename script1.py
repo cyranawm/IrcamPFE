@@ -6,7 +6,7 @@ Created on Fri Mar 23 12:47:18 2018
 @author: cyranaouameur
 """
 
-use_cuda = True
+use_cuda = False
 
 
 from VAE.Vanilla_VAE_NN import Vanilla_VAE
@@ -64,9 +64,12 @@ x_dim = 28*28
 h_dim = 500
 z_dim = 10
 
-vae1 = Vanilla_VAE(x_dim,h_dim,z_dim, use_cuda)
+
 if use_cuda:
+    vae1 = Vanilla_VAE(x_dim,h_dim,z_dim, use_cuda = True)
     vae1.cuda()
+else:
+    vae1 = Vanilla_VAE(x_dim,h_dim,z_dim, use_cuda = False)
 
 
 trainloader = load_MNIST(vae1.mb_size)
@@ -76,6 +79,7 @@ vae1.train(trainloader, 10)
 
 if use_cuda:
     vae1.cpu()
+
 
 name = 'test1'
 savepath = 'results/'+name

@@ -45,11 +45,11 @@ class Vanilla_VAE(nn.Module):
     def __init__(self, x_dim, h_dim, z_dim, mb_size = 100, use_cuda = False, use_tensorboard = False):
         super(Vanilla_VAE, self).__init__()
         
+        self.use_tensorboard = use_tensorboard
+        
         if use_tensorboard:
             import tensorboardX
             from tensorboardX import SummaryWriter
-            
-            self.tensorboard = True
             self.writer = SummaryWriter()
         
         #PARAMS
@@ -90,7 +90,7 @@ class Vanilla_VAE(nn.Module):
         
         recon = torch.log(2 * np.pi * x_recon_var) + (x-x_recon_mu).pow(2).div(x_recon_var + 1e-7)
         recon = 0.5 * torch.sum(recon)
-        recon /= (self.mb_size * self.X_dim)
+        recon /= (self.mb_size * self.x_dim)
     
         kl_loss = 0.5 * torch.sum(torch.exp(z_var) + z_mu**2 - 1. - z_var)
         
@@ -125,7 +125,7 @@ class Vanilla_VAE(nn.Module):
                 # get the inputs
                 raw_inputs, labels = data
                 
-                inputs = raw_inputs.view((1,self.mb_size,self.x_dim))
+                inputs = raw_inputs.view(1,self.mb_size,self.x_dim)
         
                 # wrap them in Variable
                 inputs, labels = Variable(torch.FloatTensor(1*(inputs.numpy()>0.5))), Variable(labels)
@@ -139,11 +139,11 @@ class Vanilla_VAE(nn.Module):
                 
                 z_mu, z_var = self.encode(x)
                 z = sample_z(z_mu,z_var, self.mb_size, self.z_dim) 
-                x_recon = self.decode(z)
+                x_recon_mu, x_recon_var = self.decode(z)
 
-                loss = self.B_loss(x, x_recon, z_mu, z_var)
+                loss = self.G_loss(x, x_recon_mu, x_recon_var, z_mu, z_var)
                 
-                if self.tensorboard:
+                if self.use_tensorboard:
                     #TENSORBOARD VISUALIZATION
                     for name, param in self.named_parameters():
                         self.writer.add_histogram(name, param.clone().cpu().data.numpy(), iter)
@@ -165,7 +165,7 @@ class Vanilla_VAE(nn.Module):
                 print('[%d, %5d] \n loss: %.3f \n recon_loss: %.3f \n KLloss: %.3f \n -----------------' %
                           (epoch + 1, i + 1, running_loss / 100, recon_loss/100, KLloss/100 ))
                 running_loss, recon_loss, KLloss = 0.0, 0.0, 0.0
-        if self.tensorboard:
+        if self.use_tensorboard:
             self.writer.close()
         print("Finished")
         return True
