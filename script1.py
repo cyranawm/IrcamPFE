@@ -33,14 +33,6 @@ def load_MNIST(mb_size):
     return data_loader
 
 
-def test_MNIST():
-    transform = transforms.ToTensor()
-    MNIST = torchvision.datasets.MNIST("./datasets/MNIST/", train=False, transform=transform, target_transform=None, download=True)
-    
-    test_loader = torch.utils.data.DataLoader(MNIST,
-                                          batch_size=1,
-                                          shuffle=True)
-    return test_loader
 
 #
 #def load_ff(mb_size):
@@ -73,7 +65,7 @@ else:
 
 
 trainloader = load_MNIST(vae1.mb_size)
-testloader = test_MNIST()
+
 
 vae1.train(trainloader, 10)
 
@@ -85,4 +77,4 @@ name = 'test1'
 savepath = 'results/'+name
 torch.save(vae1.state_dict(), savepath)
 
-#visu_recon(1,testloader,vae1)
+

@@ -97,7 +97,7 @@ class Vanilla_VAE(nn.Module):
         
         recon= torch.log(2 * np.pi * x_recon_var + 1e-10) + (x-x_recon_mu).pow(2).div(x_recon_var + 1e-10)
         recon = 0.5 * torch.sum(recon)
-        recon /= (self.mb_size * self.x_dim)
+        #recon /= (self.mb_size * self.x_dim)
     
         kl_loss = 0.5 * torch.sum(torch.exp(z_var) + z_mu**2 - 1. - z_var)
         
@@ -163,8 +163,7 @@ class Vanilla_VAE(nn.Module):
                 loss[0].backward()
                 optimizer.step()
                 
-                # print statistics
-                
+                # print statistics                
                 running_loss += loss[0].data[0]
                 recon_loss += loss[1].data[0]
                 KLloss += loss[2].data[0]

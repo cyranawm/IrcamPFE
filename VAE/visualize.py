@@ -25,7 +25,9 @@ def visu_recon(nb, test_set, vae):
         raw_inputs, labels = data
         inputs = raw_inputs.view((1,1,28*28))
         
-        inputs, labels = Variable(torch.FloatTensor(1*(inputs.numpy()>0.5))), Variable(labels)
+        #inputs, labels = Variable(torch.FloatTensor(1*(inputs.numpy()>0.5))), Variable(labels)
+        inputs, labels = Variable(inputs), Variable(labels)
+        
         
         z = vae.encode(inputs)[0]
         print(z.data)
