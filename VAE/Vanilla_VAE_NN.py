@@ -117,17 +117,23 @@ class Vanilla_VAE(nn.Module):
     def train(self, trainloader, n_epoch):
         
         optimizer = optim.Adam(self.parameters(), lr=0.0001)
-        running_loss, recon_loss, KLloss = 0.0, 0.0, 0.0
         
 #        dummy_input = Variable(torch.rand(13, 1, 28, 28))
 #        self.writer.add_graph(self, dummy_input)
         
+        epoch_size = 600
         
         for epoch in range(n_epoch):
+            
+            epoch_loss = 0.0
+            epoch_recon = 0.0
+            epoch_KL = 0.0
             
             for i, data in enumerate(trainloader):
                 
                 #iter = epoch*600 + i
+                
+                running_loss, recon_loss, KLloss = 0.0, 0.0, 0.0
                 
                 # get the inputs
                 raw_inputs, labels = data
@@ -150,15 +156,15 @@ class Vanilla_VAE(nn.Module):
 
                 loss = self.G_loss(x, x_recon_mu, x_recon_var, z_mu, z_var)
                 
-                if i == 0 and epoch>0:
+                if i == epoch_size-1 :
                     if self.use_tensorboard:
                         #TENSORBOARD VISUALIZATION
                         for name, param in self.named_parameters():
-                            self.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch)
+                            self.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch+1)
                             
-                        self.writer.add_scalars('losses', {'loss': loss[0].data[0],
+                        self.writer.add_scalars('avglosses', {'loss': loss[0].data[0],
                                                            'Recon_loss': loss[1].data[0],
-                                                           'KL_loss': loss[2].data[0]}, epoch)
+                                                           'KL_loss': loss[2].data[0]}, epoch+1)
                 
                 # BACKPROP
                 loss[0].backward()
@@ -176,7 +182,21 @@ class Vanilla_VAE(nn.Module):
                            recon_loss/self.mb_size, 
                            KLloss/self.mb_size ))
                 
-                running_loss, recon_loss, KLloss = 0.0, 0.0, 0.0
+                #tensorboard plot
+                if self.use_tensorboard:
+                    epoch_loss += loss[0].data[0]/ self.mb_size
+                    epoch_recon += loss[1].data[0]/ self.mb_size
+                    epoch_KL += loss[2].data[0]/ self.mb_size
+                    
+                    if i == epoch_size-1 :
+                        for name, param in self.named_parameters():
+                            self.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch+1)
+                            
+                        self.writer.add_scalars('avglosses', {'loss': epoch_loss/epoch_size,
+                                                           'Recon_loss': epoch_recon/epoch_size,
+                                                           'KL_loss': epoch_KL/epoch_size},
+                                                            epoch+1)
+                
                 
         if self.use_tensorboard:
             self.writer.close()
