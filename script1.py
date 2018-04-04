@@ -57,7 +57,9 @@ x_dim = 28*28
 h_dim = 500
 z_dim = 10
 
-vae1 = Vanilla_VAE(x_dim,h_dim,z_dim, use_cuda, use_tensorboard)
+mb_size = 100
+
+vae1 = Vanilla_VAE(x_dim,h_dim,z_dim, mb_size, use_cuda, use_tensorboard)
 
 if use_cuda :
     vae1.cuda()
