@@ -127,7 +127,7 @@ class Vanilla_VAE(nn.Module):
             
             for i, data in enumerate(trainloader):
                 
-                iter = epoch*600 + i
+                #iter = epoch*600 + i
                 
                 # get the inputs
                 raw_inputs, labels = data
@@ -150,14 +150,15 @@ class Vanilla_VAE(nn.Module):
 
                 loss = self.G_loss(x, x_recon_mu, x_recon_var, z_mu, z_var)
                 
-                if self.use_tensorboard:
-                    #TENSORBOARD VISUALIZATION
-                    for name, param in self.named_parameters():
-                        self.writer.add_histogram(name, param.clone().cpu().data.numpy(), iter)
-                        
-                    self.writer.add_scalars('losses', {'loss': loss[0].data[0],
-                                                       'Recon_loss': loss[1].data[0],
-                                                       'KL_loss': loss[2].data[0]}, iter)
+                if i == 0 and epoch>0:
+                    if self.use_tensorboard:
+                        #TENSORBOARD VISUALIZATION
+                        for name, param in self.named_parameters():
+                            self.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch)
+                            
+                        self.writer.add_scalars('losses', {'loss': loss[0].data[0],
+                                                           'Recon_loss': loss[1].data[0],
+                                                           'KL_loss': loss[2].data[0]}, epoch)
                 
                 # BACKPROP
                 loss[0].backward()
@@ -169,8 +170,14 @@ class Vanilla_VAE(nn.Module):
                 KLloss += loss[2].data[0]
                 
                 print('[%d, %5d] \n loss: %.3f \n recon_loss: %.3f \n KLloss: %.3f \n -----------------' %
-                          (epoch + 1, i + 1, running_loss / 100, recon_loss/100, KLloss/100 ))
+                          (epoch + 1, 
+                           i + 1, 
+                           running_loss / self.mb_size, 
+                           recon_loss/self.mb_size, 
+                           KLloss/self.mb_size ))
+                
                 running_loss, recon_loss, KLloss = 0.0, 0.0, 0.0
+                
         if self.use_tensorboard:
             self.writer.close()
         print("Finished")

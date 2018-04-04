@@ -6,9 +6,11 @@ Created on Fri Mar 23 12:47:18 2018
 @author: cyranaouameur
 """
 
-use_cuda = False
-use_tensorboard = False
+#use_cuda = False
+#use_tensorboard = False
 
+use_cuda = True
+use_tensorboard = True
 
 from VAE.Vanilla_VAE_NN import Vanilla_VAE
 #from Bernoulli_VAE import Bernoulli_VAE
