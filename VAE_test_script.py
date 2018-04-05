@@ -53,3 +53,4 @@ testloader = test_MNIST()
 #%%
 visu_recon(1,testloader,vae1)
 
+
