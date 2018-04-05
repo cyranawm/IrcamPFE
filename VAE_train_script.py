@@ -9,7 +9,6 @@ Created on Fri Mar 23 12:47:18 2018
 #use_cuda = False
 #use_tensorboard = False
 
-use_cuda = True
 use_tensorboard = True
 
 from VAE.Vanilla_VAE_NN import Vanilla_VAE
@@ -23,6 +22,9 @@ from VAE.Vanilla_VAE_NN import Vanilla_VAE
 import numpy as np
 
 import torch
+use_cuda = torch.cuda.is_available()
+
+
 import torchvision
 import torchvision.transforms as transforms
 
