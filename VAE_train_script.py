@@ -73,7 +73,7 @@ if use_cuda :
 trainloader = load_MNIST(vae1.mb_size)
 
 
-vae1.train(trainloader, 10)
+vae1.train(trainloader, 600)
 
 if use_cuda:
     vae1.cpu()
