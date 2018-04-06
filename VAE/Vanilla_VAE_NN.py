@@ -28,15 +28,15 @@ def xavier_init(size):
     xavier_stddev = 1 / np.sqrt(in_dim / 2.)
     return torch.randn(*size) * xavier_stddev
 
-def sample_z(mu, log_var, mb_size, Z_dim, use_cuda):
+def sample_z(mu, var, mb_size, Z_dim, use_cuda):
     # Using reparameterization trick to sample from a gaussian
     
     if use_cuda:
         eps = Variable(torch.randn(mb_size, Z_dim))
-        res = mu + torch.exp(log_var / 2).cuda() * eps.cuda()
+        res = mu + var.sqrt.cuda() * eps.cuda()
     else:
         eps = Variable(torch.randn(mb_size, Z_dim))
-        res = mu + torch.exp(log_var / 2) * eps
+        res = mu + var.sqrt * eps
     
     return res
 
@@ -178,15 +178,15 @@ class Vanilla_VAE(nn.Module):
                 print('[%d, %5d] \n loss: %.3f \n recon_loss: %.3f \n KLloss: %.3f \n -----------------' %
                           (epoch + 1, 
                            i + 1, 
-                           running_loss / self.mb_size, 
-                           recon_loss/self.mb_size, 
-                           KLloss/self.mb_size ))
+                           running_loss, 
+                           recon_loss, 
+                           KLloss ))
                 
                 #tensorboard plot
                 if self.use_tensorboard:
-                    epoch_loss += loss[0].data[0]/ self.mb_size
-                    epoch_recon += loss[1].data[0]/ self.mb_size
-                    epoch_KL += loss[2].data[0]/ self.mb_size
+                    epoch_loss += loss[0].data[0]
+                    epoch_recon += loss[1].data[0]
+                    epoch_KL += loss[2].data[0]
                     
                     if i == epoch_size-1 :
                         for name, param in self.named_parameters():
