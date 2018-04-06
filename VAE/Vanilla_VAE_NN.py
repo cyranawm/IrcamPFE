@@ -33,10 +33,10 @@ def sample_z(mu, var, mb_size, Z_dim, use_cuda):
     
     if use_cuda:
         eps = Variable(torch.randn(mb_size, Z_dim))
-        res = mu + var.sqrt.cuda() * eps.cuda()
+        res = mu + var.sqrt().cuda() * eps.cuda()
     else:
         eps = Variable(torch.randn(mb_size, Z_dim))
-        res = mu + var.sqrt * eps
+        res = mu + var.sqrt() * eps
     
     return res
 
