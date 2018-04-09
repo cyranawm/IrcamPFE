@@ -95,11 +95,13 @@ class Vanilla_VAE(nn.Module):
 
     def G_loss(self, x, x_recon_mu, x_recon_var, z_mu, z_var):
         
+        z_sigma = z_var.sqrt()
+        
         recon= torch.log(2 * np.pi * x_recon_var + 1e-10) + (x-x_recon_mu).pow(2).div(x_recon_var + 1e-10)
         recon = 0.5 * torch.mean(recon)
         #recon /= (self.mb_size * self.x_dim)
     
-        kl_loss = 0.5 * torch.mean(torch.exp(z_var) + z_mu**2 - 1. - z_var)
+        kl_loss = 0.5 * torch.mean(torch.exp(z_sigma) + z_mu**2 - 1. - z_sigma)
         
         loss = recon + kl_loss
         return loss, recon, kl_loss
