@@ -101,7 +101,7 @@ class Vanilla_VAE(nn.Module):
         recon = 0.5 * torch.mean(recon)
         #recon /= (self.mb_size * self.x_dim)
     
-        kl_loss = 0.5 * torch.mean(torch.exp(z_sigma) + z_mu**2 - 1. - z_sigma)
+        kl_loss = 0.5 * torch.mean(z_sigma + z_mu**2 - 1. - z_sigma.log())
         
         loss = recon + kl_loss
         return loss, recon, kl_loss
