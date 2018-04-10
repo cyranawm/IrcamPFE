@@ -95,7 +95,7 @@ class Vanilla_VAE(nn.Module):
 
     def G_loss(self, x, x_recon_mu, x_recon_var, z_mu, z_var):
         
-        z_sigma = z_var.sqrt()
+        z_sigma = z_var.sqrt()+1e-10
         
         recon= torch.log(2 * np.pi * x_recon_var + 1e-10) + (x-x_recon_mu).pow(2).div(x_recon_var + 1e-10)
         recon = 0.5 * torch.mean(recon)
