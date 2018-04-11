@@ -93,7 +93,7 @@ class Vanilla_VAE(nn.Module):
         
         #z_sigma = z_var.sqrt()+1e-8
         
-        recon= np.log(2 * np.pi) + x_recon_logvar + (x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar) + 1e-8)
+        recon= x_recon_logvar.add(np.log(2 * np.pi))+  (x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar) + 1e-8)
         recon = 0.5 * torch.sum(recon,1)
         recon = torch.mean(recon)
         #recon /= (self.mb_size * self.x_dim)
