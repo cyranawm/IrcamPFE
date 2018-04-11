@@ -95,9 +95,9 @@ class Vanilla_VAE(nn.Module):
 
     def G_loss(self, x, x_recon_mu, x_recon_var, z_mu, z_var):
         
-        z_sigma = z_var.sqrt()+1e-10
+        z_sigma = z_var.sqrt()+1e-8
         
-        recon= torch.log(2 * np.pi * x_recon_var + 1e-10) + (x-x_recon_mu).pow(2).div(x_recon_var + 1e-10)
+        recon= torch.log(2 * np.pi * x_recon_var + 1e-8) + (x-x_recon_mu).pow(2).div(x_recon_var + 1e-8)
         recon = 0.5 * torch.mean(recon)
         #recon /= (self.mb_size * self.x_dim)
     
@@ -119,6 +119,7 @@ class Vanilla_VAE(nn.Module):
     def train(self, trainloader, n_epoch):
         
         optimizer = optim.Adam(self.parameters(), lr=0.0001)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=300, gamma=0.1)
         
 #        dummy_input = Variable(torch.rand(13, 1, 28, 28))
 #        self.writer.add_graph(self, dummy_input)
@@ -168,6 +169,9 @@ class Vanilla_VAE(nn.Module):
                                                            'Recon_loss': loss[1].data[0],
                                                            'KL_loss': loss[2].data[0]}, epoch+1)
                 
+                #Annealing
+                
+    
                 # BACKPROP
                 loss[0].backward()
                 optimizer.step()
@@ -198,7 +202,8 @@ class Vanilla_VAE(nn.Module):
                                                            'Recon_loss': epoch_recon/epoch_size,
                                                            'KL_loss': epoch_KL/epoch_size},
                                                             epoch+1)
-                
+             
+            scheduler.step()
                 
         if self.use_tensorboard:
             self.writer.close()
