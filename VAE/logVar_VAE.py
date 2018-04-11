@@ -39,7 +39,14 @@ def sample_z(mu, logvar, mb_size, Z_dim, use_cuda):
 
 class Vanilla_VAE(nn.Module):
     
-    def __init__(self, x_dim, h_dim, z_dim, mb_size = 100, use_cuda = False, use_tensorboard = False):
+    def __init__(self, 
+                 x_dim, 
+                 h_dim, 
+                 z_dim, 
+                 mb_size = 100, 
+                 use_cuda = False, 
+                 use_tensorboard = False):
+        
         super(Vanilla_VAE, self).__init__()
         
         self.use_tensorboard = use_tensorboard
@@ -71,14 +78,14 @@ class Vanilla_VAE(nn.Module):
     def encode(self, x):
         h = self.xh(x)
         z_mu = self.hz_mu(h)
-        z_logvar = self.hz_var(h)
+        z_logvar = self.hz_logvar(h)
         return z_mu, z_logvar
     
     
     def decode(self, z):
         h = F.relu(self.zh(z))
         x_mu = F.sigmoid(self.hx_mu(h))
-        x_logvar = self.hx_var(h)
+        x_logvar = self.hx_logvar(h)
         return x_mu, x_logvar
     
 
@@ -86,7 +93,7 @@ class Vanilla_VAE(nn.Module):
         
         #z_sigma = z_var.sqrt()+1e-8
         
-        recon= torch.log(2 * np.pi) + x_recon_logvar + (x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar) + 1e-8)
+        recon= np.log(2 * np.pi) + x_recon_logvar + (x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar) + 1e-8)
         recon = 0.5 * torch.sum(recon,1)
         recon = torch.mean(recon)
         #recon /= (self.mb_size * self.x_dim)
