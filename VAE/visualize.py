@@ -18,10 +18,13 @@ import torch
 
 
 
-def visu_recon(nb, test_set, vae):
+def plotInOut(test_set, vae):
     for i, data in enumerate(test_set):
-        if i > nb:
+        if i > 3:
             break
+        
+        idx = i+1
+        
         raw_inputs, labels = data
         inputs = raw_inputs.view((1,1,28*28))
         
@@ -30,15 +33,14 @@ def visu_recon(nb, test_set, vae):
         
         
         z = vae.encode(inputs)[0]
-        print(z.data)
         recon = vae.decode(z)[0]
         
         raw_inputs = inputs.data.view(28,28)
         recon = recon.view(28,28)
         
         #print(recon)
-        plt.subplot(211)
+        plt.subplot(2,4,idx)
         plt.imshow(raw_inputs)
-        plt.subplot(212)
+        plt.subplot(2,4,4+idx)
         plt.imshow(recon.data.numpy())
     

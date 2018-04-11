@@ -1,31 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from VAE.Vanilla_VAE_NN import Vanilla_VAE
-from VAE.visualize import visu_recon
+from VAE.visualize import plotInOut
 
 import torch
 import torchvision
 import torchvision.transforms as transforms
 
 
+from datasets.MNIST import load_MNIST, test_MNIST
 
-def test_MNIST():
-    transform = transforms.ToTensor()
-    MNIST = torchvision.datasets.MNIST("./datasets/MNIST/", train=False, transform=transform, target_transform=None, download=True)
-    
-    test_loader = torch.utils.data.DataLoader(MNIST,
-                                          batch_size=1,
-                                          shuffle=True)
-    return test_loader
-
-def load_MNIST(mb_size):
-    transform = transforms.ToTensor()
-    MNIST = torchvision.datasets.MNIST("./datasets/MNIST/", train=True, transform=transform, target_transform=None, download=True)
-    
-    data_loader = torch.utils.data.DataLoader(MNIST,
-                                          batch_size=mb_size,
-                                          shuffle=True)
-    return data_loader
 
 
 name = 'test1'
@@ -42,6 +26,7 @@ vae1.load_state_dict(state_dict)
 
 
 
+
 testloader = test_MNIST()
 #trainloader = load_MNIST(1)
 
@@ -51,6 +36,7 @@ testloader = test_MNIST()
 
 
 #%%
-visu_recon(1,testloader,vae1)
+plotInOut(testloader,vae1)
+
 
 

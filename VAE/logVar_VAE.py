@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -20,31 +22,19 @@ import torch.utils.data as data_utils
 
 
 import torch.optim as optim
-#import matplotlib.pyplot as plt
 
-def xavier_init(size):
-    """Xavier init to initialize Tensor in Encoder/Decoder's nets"""
-    in_dim = size[0]
-    xavier_stddev = 1 / np.sqrt(in_dim / 2.)
-    return torch.randn(*size) * xavier_stddev
 
-def sample_z(mu, var, mb_size, Z_dim, use_cuda):
+def sample_z(mu, logvar, mb_size, Z_dim, use_cuda):
     # Using reparameterization trick to sample from a gaussian
     
     if use_cuda:
         eps = Variable(torch.randn(mb_size, Z_dim))
-        res = mu + var.sqrt().cuda() * eps.cuda()
+        res = mu + torch.exp(0.5*logvar.cuda()) * eps.cuda()
     else:
         eps = Variable(torch.randn(mb_size, Z_dim))
-        res = mu + var.sqrt() * eps
+        res = mu + torch.exp(0.5*logvar) * eps
     
     return res
-
-def value_test(x):
-    if (np.nan in x.data.numpy() or np.inf in abs(x.data.numpy())):
-        return 'nan'
-    else:
-        return ''
 
 
 class Vanilla_VAE(nn.Module):
@@ -55,7 +45,6 @@ class Vanilla_VAE(nn.Module):
         self.use_tensorboard = use_tensorboard
         
         if use_tensorboard:
-            import tensorboardX
             from tensorboardX import SummaryWriter
             self.writer = SummaryWriter()
         
@@ -68,12 +57,12 @@ class Vanilla_VAE(nn.Module):
         #ENCODER LAYERS
         self.xh = nn.Linear(x_dim, h_dim)
         self.hz_mu = nn.Linear(h_dim, z_dim)
-        self.hz_var = nn.Linear(h_dim, z_dim)
+        self.hz_logvar = nn.Linear(h_dim, z_dim)
     
         #DECODER LAYERS
         self.zh = nn.Linear(z_dim, h_dim)
         self.hx_mu = nn.Linear(h_dim, x_dim)
-        self.hx_var = nn.Linear(h_dim, x_dim)
+        self.hx_logvar = nn.Linear(h_dim, x_dim)
         
         self.use_cuda = use_cuda
 
@@ -82,35 +71,38 @@ class Vanilla_VAE(nn.Module):
     def encode(self, x):
         h = self.xh(x)
         z_mu = self.hz_mu(h)
-        z_var = F.sigmoid(self.hz_var(h))
-        return z_mu, z_var
+        z_logvar = self.hz_var(h)
+        return z_mu, z_logvar
     
     
     def decode(self, z):
         h = F.relu(self.zh(z))
         x_mu = F.sigmoid(self.hx_mu(h))
-        x_var = F.sigmoid(self.hx_var(h))
-        return x_mu, x_var
+        x_logvar = self.hx_var(h)
+        return x_mu, x_logvar
     
 
-    def G_loss(self, x, x_recon_mu, x_recon_var, z_mu, z_var):
+    def G_loss(self, x, x_recon_mu, x_recon_logvar, z_mu, z_logvar):
         
-        z_sigma = z_var.sqrt()+1e-8
+        #z_sigma = z_var.sqrt()+1e-8
         
-        recon= torch.log(2 * np.pi * x_recon_var + 1e-8) + (x-x_recon_mu).pow(2).div(x_recon_var + 1e-8)
-        recon = 0.5 * torch.mean(recon)
+        recon= torch.log(2 * np.pi) + x_recon_logvar + (x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar) + 1e-8)
+        recon = 0.5 * torch.sum(recon,1)
+        recon = torch.mean(recon)
         #recon /= (self.mb_size * self.x_dim)
     
-        kl_loss = 0.5 * torch.mean(z_sigma + z_mu**2 - 1. - z_sigma.log())
+        kl_loss = torch.exp(z_logvar) + z_mu**2 - 1. - z_logvar
+        kl_loss = 0.5 * torch.sum(torch.sum(kl_loss,1)) #no size average
+        kl_loss = torch.mean(kl_loss)
         
         loss = recon + kl_loss
         return loss, recon, kl_loss
     
     
     def forward(self, x, sample = True):
-        z_mu, z_var = self.encode(x)
+        z_mu, z_logvar = self.encode(x)
         if sample:    
-            z = sample_z(z_mu,z_var, self.mb_size, self.z_dim) 
+            z = sample_z(z_mu,z_logvar, self.mb_size, self.z_dim) 
         else :
             z = z_mu
         x_recon = self.decode(z)
@@ -141,7 +133,7 @@ class Vanilla_VAE(nn.Module):
                 # get the inputs
                 raw_inputs, labels = data
                 
-                inputs = raw_inputs.view(self.mb_size,self.x_dim)
+                inputs = raw_inputs.view(1,self.mb_size,self.x_dim)
         
                 # wrap them in Variable
                 inputs, labels = Variable(inputs), Variable(labels)
@@ -153,11 +145,11 @@ class Vanilla_VAE(nn.Module):
                 if self.use_cuda:
                     x = x.cuda()
                 
-                z_mu, z_var = self.encode(x)
-                z = sample_z(z_mu,z_var, self.mb_size, self.z_dim, self.use_cuda) 
-                x_recon_mu, x_recon_var = self.decode(z)
+                z_mu, z_logvar = self.encode(x)
+                z = sample_z(z_mu,z_logvar, self.mb_size, self.z_dim, self.use_cuda) 
+                x_recon_mu, x_recon_logvar = self.decode(z)
 
-                loss = self.G_loss(x, x_recon_mu, x_recon_var, z_mu, z_var)
+                loss = self.G_loss(x, x_recon_mu, x_recon_logvar, z_mu, z_logvar)
                 
                 if i == epoch_size-1 :
                     if self.use_tensorboard:
