@@ -76,15 +76,15 @@ class Vanilla_VAE(nn.Module):
 
         
     def encode(self, x):
-        h = self.xh(x)
+        h = F.relu6(self.xh(x))
         z_mu = self.hz_mu(h)
         z_logvar = self.hz_logvar(h)
         return z_mu, z_logvar
     
     
     def decode(self, z):
-        h = F.relu(self.zh(z))
-        x_mu = F.sigmoid(self.hx_mu(h))
+        h = F.relu6(self.zh(z))
+        x_mu = self.hx_mu(h)
         x_logvar = self.hx_logvar(h)
         return x_mu, x_logvar
     
