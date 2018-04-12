@@ -12,7 +12,7 @@ Created on Fri Mar 23 12:47:18 2018
 use_tensorboard = True
 
 #from VAE.Vanilla_VAE_NN import Vanilla_VAE
-from VAE.logVar_VAE import Vanilla_VAE
+from VAE.Conv_VAE import Conv_VAE
 #from Bernoulli_VAE import Bernoulli_VAE
 #from VAE.Bernoulli_VAE_NN import Bernoulli_VAE
 
@@ -38,25 +38,25 @@ z_dim = 10
 
 mb_size = 100
 
-vae1 = Vanilla_VAE(x_dim,h_dim,z_dim, mb_size, use_cuda, use_tensorboard)
+convvae = Conv_VAE(h_dim,z_dim, mb_size, use_cuda, use_tensorboard)
 
 if use_cuda :
-    vae1.cuda()
+    convvae.cuda()
 
 
 
-trainloader = load_MNIST(vae1.mb_size)
+trainloader = load_MNIST(convvae.mb_size)
 
 
-vae1.train(trainloader, 1000)
+convvae.train(trainloader, 100)
 
 if use_cuda:
-    vae1.cpu()
+    convvae.cpu()
     torch.cuda.set_device(1)
 
 
-name = 'test1'
+name = 'conv1'
 savepath = 'results/'+name
-torch.save(vae1.state_dict(), savepath)
+torch.save(convvae.state_dict(), savepath)
 
 
