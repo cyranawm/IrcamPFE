@@ -41,6 +41,8 @@ mb_size = 100
 convvae = Conv_VAE(h_dim,z_dim, mb_size, use_cuda, use_tensorboard)
 
 if use_cuda :
+    torch.cuda.set_device(1)
+    print("**************************** USING CUDA ****************************")
     convvae.cuda()
 
 
@@ -52,8 +54,6 @@ convvae.train(trainloader, 100)
 
 if use_cuda:
     convvae.cpu()
-    torch.cuda.set_device(1)
-
 
 name = 'conv1'
 savepath = 'results/'+name

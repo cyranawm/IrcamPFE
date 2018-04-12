@@ -41,6 +41,8 @@ mb_size = 100
 vae1 = Vanilla_VAE(x_dim,h_dim,z_dim, mb_size, use_cuda, use_tensorboard)
 
 if use_cuda :
+    torch.cuda.set_device(1)
+    print("**************************** USING CUDA ****************************")
     vae1.cuda()
 
 
@@ -52,7 +54,6 @@ vae1.train(trainloader, 1000)
 
 if use_cuda:
     vae1.cpu()
-    torch.cuda.set_device(1)
 
 
 name = 'test1'
