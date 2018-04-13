@@ -114,7 +114,7 @@ class Conv_VAE(nn.Module):
         kl_loss = torch.mean(kl_loss)
         
         loss = recon + kl_loss
-        return loss, recon, kl_loss
+        return recon, kl_loss
     
     
     def forward(self, x, sample = True):
@@ -126,10 +126,10 @@ class Conv_VAE(nn.Module):
         x_recon = self.decode(z)
         return x_recon[0]
     
-    def train(self, trainloader, n_epoch):
+    def train(self, trainloader, n_epoch, wu_time):
         
         optimizer = optim.Adam(self.parameters(), lr=0.0001)
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=300, gamma=0.1)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.5)
         
 #        dummy_input = Variable(torch.rand(13, 1, 28, 28))
 #        self.writer.add_graph(self, dummy_input)
@@ -137,6 +137,12 @@ class Conv_VAE(nn.Module):
         epoch_size = 600
         
         for epoch in range(n_epoch):
+            
+            if epoch < wu_time:
+                beta = epoch / wu_time
+            else :
+                beta = 1
+                
             
             epoch_loss = 0.0
             epoch_recon = 0.0
@@ -167,7 +173,9 @@ class Conv_VAE(nn.Module):
                 z = sample_z(z_mu,z_logvar, self.mb_size, self.z_dim, self.use_cuda) 
                 x_recon_mu, x_recon_logvar = self.decode(z)
 
-                loss = self.G_loss(x, x_recon_mu, x_recon_logvar, z_mu, z_logvar)
+                recon_loss, kl_loss = self.G_loss(x, x_recon_mu, x_recon_logvar, z_mu, z_logvar)
+                
+                loss = recon_loss + beta*kl_loss
                 
                 if i == epoch_size-1 :
                     if self.use_tensorboard:

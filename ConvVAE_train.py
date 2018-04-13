@@ -50,7 +50,7 @@ if use_cuda :
 trainloader = load_MNIST(convvae.mb_size)
 
 
-convvae.train(trainloader, 100)
+convvae.train(trainloader, 1000, 100)
 
 if use_cuda:
     convvae.cpu()

@@ -103,7 +103,7 @@ class Vanilla_VAE(nn.Module):
         kl_loss = torch.mean(kl_loss)
         
         loss = recon + kl_loss
-        return loss, recon, kl_loss
+        return recon, kl_loss
     
     
     def forward(self, x, sample = True):
@@ -115,7 +115,7 @@ class Vanilla_VAE(nn.Module):
         x_recon = self.decode(z)
         return x_recon[0]
     
-    def train(self, trainloader, n_epoch):
+    def train(self, trainloader, n_epoch, wu_time):
         
         optimizer = optim.Adam(self.parameters(), lr=0.0001)
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=300, gamma=0.1)
@@ -126,6 +126,12 @@ class Vanilla_VAE(nn.Module):
         epoch_size = 600
         
         for epoch in range(n_epoch):
+            
+            if epoch < wu_time:
+                beta = epoch / wu_time
+            else :
+                beta = 1
+            
             
             epoch_loss = 0.0
             epoch_recon = 0.0
@@ -140,7 +146,7 @@ class Vanilla_VAE(nn.Module):
                 # get the inputs
                 raw_inputs, labels = data
                 
-                inputs = raw_inputs.view(1,self.mb_size,self.x_dim)
+                inputs = raw_inputs.view(self.mb_size,self.x_dim)
         
                 # wrap them in Variable
                 inputs, labels = Variable(inputs), Variable(labels)
@@ -156,7 +162,9 @@ class Vanilla_VAE(nn.Module):
                 z = sample_z(z_mu,z_logvar, self.mb_size, self.z_dim, self.use_cuda) 
                 x_recon_mu, x_recon_logvar = self.decode(z)
 
-                loss = self.G_loss(x, x_recon_mu, x_recon_logvar, z_mu, z_logvar)
+                recon_loss, kl_loss = self.G_loss(x, x_recon_mu, x_recon_logvar, z_mu, z_logvar)
+                
+                loss = recon_loss + beta*kl_loss
                 
                 if i == epoch_size-1 :
                     if self.use_tensorboard:
@@ -167,6 +175,15 @@ class Vanilla_VAE(nn.Module):
                         self.writer.add_scalars('avglosses', {'loss': loss[0].data[0],
                                                            'Recon_loss': loss[1].data[0],
                                                            'KL_loss': loss[2].data[0]}, epoch+1)
+                        if np.mod(50,epoch) == 0:
+                            for img in range(2):
+                                x = x[img].data
+                                x = x.view(28,28)
+                                self.write.add_image('Original', x, epoch)
+                                
+                                xrec = x_recon_mu[img].data
+                                xrec = x.view(28,28)
+                                self.write.add_image('Reconstructed', xrec, epoch)
                 
                 #Annealing
                 
