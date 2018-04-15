@@ -182,14 +182,14 @@ class Vanilla_VAE(nn.Module):
                                                            'Recon_loss': recon_loss.data[0],
                                                            'KL_loss': kl_loss.data[0]}, epoch+1)
                         if np.mod(50,epoch) == 0:
-                            for img in range(2):
-                                x = x[img].data
-                                x = x.view(28,28)
-                                self.writer.add_image('Original', x, epoch)
+                            for j in range(2):
+                                original = inputs[j]
+                                original = original.view(28,28)
+                                self.writer.add_image('Original', original, epoch)
                                 
-                                xrec = x_recon_mu[img].data
-                                xrec = x.view(28,28)
-                                self.writer.add_image('Reconstructed', xrec, epoch)
+                                img_rec = x_recon_mu[j]
+                                img_rec = img_rec.view(28,28)
+                                self.writer.add_image('Reconstructed', img_rec, epoch)
                 
                 #Annealing
                 
