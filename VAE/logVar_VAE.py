@@ -63,11 +63,13 @@ class Vanilla_VAE(nn.Module):
         
         #ENCODER LAYERS
         self.xh = nn.Linear(x_dim, h_dim)
+        self.norm1 = nn.BatchNorm1d(h_dim)
         self.hz_mu = nn.Linear(h_dim, z_dim)
         self.hz_logvar = nn.Linear(h_dim, z_dim)
     
         #DECODER LAYERS
         self.zh = nn.Linear(z_dim, h_dim)
+        self.norm2 = nn.BatchNorm1d(h_dim)
         self.hx_mu = nn.Linear(h_dim, x_dim)
         self.hx_logvar = nn.Linear(h_dim, x_dim)
         
@@ -77,6 +79,7 @@ class Vanilla_VAE(nn.Module):
         
     def encode(self, x):
         h = F.relu6(self.xh(x))
+        h = self.norm1(h)
         z_mu = self.hz_mu(h)
         z_logvar = self.hz_logvar(h)
         return z_mu, z_logvar
@@ -84,6 +87,7 @@ class Vanilla_VAE(nn.Module):
     
     def decode(self, z):
         h = F.relu6(self.zh(z))
+        h = self.norm2(h)
         x_mu = self.hx_mu(h)
         x_logvar = self.hx_logvar(h)
         return x_mu, x_logvar
@@ -102,7 +106,7 @@ class Vanilla_VAE(nn.Module):
         kl_loss = 0.5 * torch.sum(torch.sum(kl_loss,1)) #no size average
         kl_loss = torch.mean(kl_loss)
         
-        loss = recon + kl_loss
+        #loss = recon + kl_loss
         return recon, kl_loss
     
     
@@ -115,7 +119,9 @@ class Vanilla_VAE(nn.Module):
         x_recon = self.decode(z)
         return x_recon[0]
     
-    def train(self, trainloader, n_epoch, wu_time):
+    def do_train(self, trainloader, n_epoch, wu_time):
+        
+        self.train()
         
         optimizer = optim.Adam(self.parameters(), lr=0.0001)
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=300, gamma=0.1)
@@ -141,7 +147,7 @@ class Vanilla_VAE(nn.Module):
                 
                 #iter = epoch*600 + i
                 
-                running_loss, recon_loss, KLloss = 0.0, 0.0, 0.0
+                running_loss, running_recon, running_kl = 0.0, 0.0, 0.0
                 
                 # get the inputs
                 raw_inputs, labels = data
@@ -172,9 +178,9 @@ class Vanilla_VAE(nn.Module):
                         for name, param in self.named_parameters():
                             self.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch+1)
                             
-                        self.writer.add_scalars('avglosses', {'loss': loss[0].data[0],
-                                                           'Recon_loss': loss[1].data[0],
-                                                           'KL_loss': loss[2].data[0]}, epoch+1)
+                        self.writer.add_scalars('avglosses', {'loss': loss.data[0],
+                                                           'Recon_loss': recon_loss.data[0],
+                                                           'KL_loss': kl_loss.data[0]}, epoch+1)
                         if np.mod(50,epoch) == 0:
                             for img in range(2):
                                 x = x[img].data
@@ -193,22 +199,22 @@ class Vanilla_VAE(nn.Module):
                 optimizer.step()
                 
                 # print statistics                
-                running_loss += loss[0].data[0]
-                recon_loss += loss[1].data[0]
-                KLloss += loss[2].data[0]
+                running_loss += loss.data[0]
+                running_recon += recon_loss.data[0]
+                running_kl += kl_loss.data[0]
                 
                 print('[%d, %5d] \n loss: %.3f \n recon_loss: %.3f \n KLloss: %.3f \n -----------------' %
                           (epoch + 1, 
                            i + 1, 
                            running_loss, 
-                           recon_loss, 
-                           KLloss ))
+                           running_recon, 
+                           running_kl ))
                 
                 #tensorboard plot
                 if self.use_tensorboard:
-                    epoch_loss += loss[0].data[0]
-                    epoch_recon += loss[1].data[0]
-                    epoch_KL += loss[2].data[0]
+                    epoch_loss += loss.data[0]
+                    epoch_recon += recon_loss.data[0]
+                    epoch_KL += kl_loss.data[0]
                     
                     if i == epoch_size-1 :
                         for name, param in self.named_parameters():

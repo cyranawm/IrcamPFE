@@ -29,7 +29,7 @@ z_dim = 10
 
 vae1 = Vanilla_VAE(x_dim,h_dim,z_dim, use_cuda = False)
 vae1.load_state_dict(state_dict)
-
+vae1.eval()
 
 #%%
 plotInOut(testloader,vae1)
