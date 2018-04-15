@@ -185,11 +185,11 @@ class Vanilla_VAE(nn.Module):
                             for img in range(2):
                                 x = x[img].data
                                 x = x.view(28,28)
-                                self.write.add_image('Original', x, epoch)
+                                self.writer.add_image('Original', x, epoch)
                                 
                                 xrec = x_recon_mu[img].data
                                 xrec = x.view(28,28)
-                                self.write.add_image('Reconstructed', xrec, epoch)
+                                self.writer.add_image('Reconstructed', xrec, epoch)
                 
                 #Annealing
                 
