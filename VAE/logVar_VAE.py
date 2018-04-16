@@ -197,6 +197,8 @@ class Vanilla_VAE(nn.Module):
     
                 # BACKPROP
                 loss.backward()
+                for layer in self.parameters():
+                    layer.grad[layer.grad>1e3] = 1e3
                 optimizer.step()
                 
             #end of epoch 
