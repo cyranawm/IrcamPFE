@@ -124,7 +124,7 @@ class Vanilla_VAE(nn.Module):
         self.train()
         
         optimizer = optim.Adam(self.parameters(), lr=0.0001)
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=300, gamma=0.1)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.5)
         
 #        dummy_input = Variable(torch.rand(13, 1, 28, 28))
 #        self.writer.add_graph(self, dummy_input)
@@ -181,7 +181,7 @@ class Vanilla_VAE(nn.Module):
                         self.writer.add_scalars('avglosses', {'loss': loss.data[0],
                                                            'Recon_loss': recon_loss.data[0],
                                                            'KL_loss': kl_loss.data[0]}, epoch+1)
-                        if np.mod(50,epoch) == 0:
+                        if np.mod(epoch,50) == 0:
                             for j in range(2):
                                 original = inputs[j]
                                 original = original.view(28,28)
