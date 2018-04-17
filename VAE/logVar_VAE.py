@@ -91,6 +91,8 @@ class Vanilla_VAE(nn.Module):
                 nn.init.xavier_normal(param)
             elif ('bias' in name) and (not 'norm' in name):
                 nn.init.uniform(param,0,0)
+        
+        
 
         
     def encode(self, x):
@@ -217,8 +219,8 @@ class Vanilla_VAE(nn.Module):
     
                 # BACKPROP
                 loss.backward()
-                for layer in self.parameters():
-                    layer.grad[layer.grad>1e3] = 1e3
+#                for layer in self.parameters():
+#                    layer.grad[layer.grad>1e3] = 1e3
                 optimizer.step()
                 
             #end of epoch 
