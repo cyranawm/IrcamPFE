@@ -6,16 +6,21 @@ Created on Mon Mar 26 14:20:47 2018
 @author: cyranaouameur
 """
 
-import matplotlib.pyplot as plt
+
+try:
+    import matplotlib
+    from matplotlib import pyplot as plt
+except:
+    import sys
+    sys.path.append("/usr/local/lib/python3.6/site-packages/")
+    import matplotlib
+    matplotlib.use('agg')
+    import matplotlib.pyplot as plt
+
+
+
 from torch.autograd import Variable
-import torchvision
-import torchvision.transforms as transforms
-import torch
 import numpy as np
-
-
-
-
 
 
 
