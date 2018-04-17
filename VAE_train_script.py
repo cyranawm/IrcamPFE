@@ -33,12 +33,13 @@ from datasets.MNIST import load_MNIST
 
   
 x_dim = 28*28
-h_dim = 500
+h1_dim = 500
+h2_dim = 200
 z_dim = 10
 
 mb_size = 100
 
-vae1 = Vanilla_VAE(x_dim,h_dim,z_dim, mb_size, use_cuda, use_tensorboard)
+vae1 = Vanilla_VAE(x_dim, h1_dim, h2_dim, z_dim, mb_size, use_cuda, use_tensorboard)
 
 if use_cuda :
     torch.cuda.set_device(1)

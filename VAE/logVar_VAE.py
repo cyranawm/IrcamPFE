@@ -41,7 +41,8 @@ class Vanilla_VAE(nn.Module):
     
     def __init__(self, 
                  x_dim, 
-                 h_dim, 
+                 h1_dim,
+                 h2_dim,
                  z_dim, 
                  mb_size = 100, 
                  use_cuda = False, 
@@ -57,39 +58,48 @@ class Vanilla_VAE(nn.Module):
         
         #PARAMS
         self.x_dim = x_dim
-        self.h_dim = h_dim
+        self.h1_dim = h1_dim
+        self.h2_dim = h2_dim
         self.z_dim = z_dim
         self.mb_size = mb_size
         
         #ENCODER LAYERS
-        self.xh = nn.Linear(x_dim, h_dim)
-        self.norm1 = nn.BatchNorm1d(h_dim)
-        self.hz_mu = nn.Linear(h_dim, z_dim)
-        self.hz_logvar = nn.Linear(h_dim, z_dim)
+        self.xh1 = nn.Linear(x_dim, h1_dim)
+        self.enc_norm1 = nn.BatchNorm1d(h1_dim)
+        self.h1h2 = nn.Linear(h1_dim, h2_dim)
+        self.enc_norm2 = nn.BatchNorm1d(h2_dim)
+        self.hz_mu = nn.Linear(h2_dim, z_dim)
+        self.hz_logvar = nn.Linear(h2_dim, z_dim)
     
         #DECODER LAYERS
-        self.zh = nn.Linear(z_dim, h_dim)
-        self.norm2 = nn.BatchNorm1d(h_dim)
-        self.hx_mu = nn.Linear(h_dim, x_dim)
-        self.hx_logvar = nn.Linear(h_dim, x_dim)
+        self.zh2 = nn.Linear(z_dim, h2_dim)
+        self.dec_norm1 = nn.BatchNorm1d(h2_dim)
+        self.h2h1 = nn.Linear(h2_dim, h1_dim)
+        self.dec_norm2 = nn.BatchNorm1d(h1_dim)
+        self.hx_mu = nn.Linear(h1_dim, x_dim)
+        self.hx_logvar = nn.Linear(h1_dim, x_dim)
         
         self.use_cuda = use_cuda
 
 
         
     def encode(self, x):
-        h = F.relu6(self.xh(x))
-        h = self.norm1(h)
-        z_mu = self.hz_mu(h)
-        z_logvar = self.hz_logvar(h)
+        h1 = F.relu6(self.xh1(x))
+        h1 = self.enc_norm1(h1)
+        h2 = F.relu6(self.h1h2(h1))
+        h2 = self.enc_norm2(h2)
+        z_mu = self.hz_mu(h2)
+        z_logvar = self.hz_logvar(h2)
         return z_mu, z_logvar
     
     
     def decode(self, z):
-        h = F.relu6(self.zh(z))
-        h = self.norm2(h)
-        x_mu = self.hx_mu(h)
-        x_logvar = self.hx_logvar(h)
+        h2 = F.relu6(self.zh2(z))
+        h2 = self.dec_norm1(h2)
+        h1 = self.h2h1(h2)
+        h1 = self.dec_norm2(h1)
+        x_mu = self.hx_mu(h1)
+        x_logvar = self.hx_logvar(h1)
         return x_mu, x_logvar
     
 
