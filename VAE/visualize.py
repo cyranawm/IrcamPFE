@@ -82,9 +82,9 @@ def saveInOut(test_set, vae, name, cuda):
 
         #print(recon)
         plt.subplot(2,4,idx)
-        plt.imshow(raw_inputs)
+        plt.imshow(raw_inputs.clone().cpu())
         plt.subplot(2,4,4+idx)
-        plt.imshow(recon.data.numpy())
+        plt.imshow(recon.data.clone().cpu().numpy())
     
     fig.savefig('./results/images/' + name)
         
