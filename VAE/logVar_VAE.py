@@ -10,18 +10,9 @@ Created on Mon Mar 26 18:22:59 2018
 
 import numpy as np
 import torch
-#import torch.onnx
 from torch.autograd import Variable
-import torchvision
-import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.legacy.nn as lnn
-
-import torch.utils.data as data_utils
-
-
-
 import torch.optim as optim
 
 
@@ -116,17 +107,16 @@ class Vanilla_VAE(nn.Module):
 
     def G_loss(self, x, x_recon_mu, x_recon_logvar, z_mu, z_logvar):
                 
-        recon= x_recon_logvar.add(np.log(2.0 * np.pi)) + (x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar) + 1e-8)
-        recon = 0.5 * torch.sum(recon,1)
-        recon = torch.mean(recon)
+#        recon= x_recon_logvar.add(np.log(2.0 * np.pi)) + (x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar) + 1e-8)
+#        recon = 0.5 * torch.sum(recon,1)
+#        recon = torch.mean(recon)
+        recon = torch.mean(torch.sum(0.5*(x_recon_logvar+(x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar).add(1e-7))+np.log(2*np.pi)),1))
     
-        kl_loss = torch.exp(z_logvar) + (z_mu**2) - 1. - z_logvar
-        kl_loss = 0.5 * torch.sum(kl_loss,1)
-        kl_loss = torch.mean(kl_loss)
-        
-#        rec_error = torch.mean(torch.sum(torch.sum(0.5*(logvar_g+(target-mu_g).pow(2).div(torch.exp(logvar_g).add(1e-7))+np.log(2*np.pi)),2),1))
-#        KLD = 0.5*(-logvar_z+torch.exp(logvar_z)+mu_z.pow(2)-1.) # prior is unit gaussian here
-#        KLD = torch.mean(torch.sum(KLD,1))
+#        kl_loss = torch.exp(z_logvar) + (z_mu**2) - 1. - z_logvar
+#        kl_loss = 0.5 * torch.sum(kl_loss,1)
+#        kl_loss = torch.mean(kl_loss)        
+        kl_loss = 0.5*(-z_logvar+torch.exp(z_logvar)+z_mu.pow(2)-1.) # prior is unit gaussian here
+        kl_loss = torch.mean(torch.sum(kl_loss,1))
       
         return recon, kl_loss
     
@@ -140,99 +130,99 @@ class Vanilla_VAE(nn.Module):
         x_recon = self.decode(z)
         return x_recon[0]
     
-    def do_train(self, trainloader, n_epoch, wu_time):
-        
-        self.train()
-        
-        optimizer = optim.Adam(self.parameters(), lr=0.0001)
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.7)
-        
-        epoch_size = 600
-        
-        for epoch in range(n_epoch):
-            
-            if epoch < wu_time:
-                beta = epoch / wu_time
-            else :
-                beta = 1
-            
-            
-            epoch_loss = 0.0
-            epoch_recon = 0.0
-            epoch_KL = 0.0
-            
-            for i, data in enumerate(trainloader):
-                
-                #iter = epoch*600 + i
-                
-                # get the inputs
-                raw_inputs, labels = data
-                
-                inputs = raw_inputs.view(self.mb_size,self.x_dim)
-        
-                # wrap them in Variable
-                inputs, labels = Variable(inputs), Variable(labels)
-                inputs = (inputs*2)-1 #normal rescale
-        
-                # zero the parameter gradients
-                optimizer.zero_grad()
-            
-                x = inputs
-                if self.use_cuda:
-                    x = x.cuda()
-                
-                z_mu, z_logvar = self.encode(x)
-                z = sample_z(z_mu,z_logvar, self.mb_size, self.z_dim, self.use_cuda) 
-                x_recon_mu, x_recon_logvar = self.decode(z)
-
-                recon_loss, kl_loss = self.G_loss(x, x_recon_mu, x_recon_logvar, z_mu, z_logvar)
-                
-                loss = recon_loss + beta*kl_loss
-                
-                if i == epoch_size-1 :
-                    if self.use_tensorboard:
-                        #TENSORBOARD VISUALIZATION
-                        for name, param in self.named_parameters():
-                            self.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch+1)
-                        
-                        epoch_loss += loss.data[0]
-                        epoch_recon += recon_loss.data[0]
-                        epoch_KL += kl_loss.data[0]
-                            
-                        self.writer.add_scalars('avglosses', {'loss': epoch_loss/epoch_size,
-                                                           'Recon_loss': epoch_recon/epoch_size,
-                                                           'KL_loss': epoch_KL/epoch_size},
-                                                            epoch+1)
-                        if np.mod(epoch,50) == 0:
-                            for j in range(2):
-                                original = inputs[j]
-                                original = original.view(28,28)
-                                self.writer.add_image('Original_'+str(epoch)+str(j), original, epoch)
-                                
-                                img_rec = x_recon_mu[j]
-                                img_rec = img_rec.view(28,28)
-                                self.writer.add_image('Reconstructed_'+str(epoch)+str(j), img_rec, epoch)
-                
-                #Annealing
-                
-    
-                # BACKPROP
-                loss.backward()
-#                for layer in self.parameters():
-#                    layer.grad[layer.grad>1e3] = 1e3
-                optimizer.step()
-                
-            #end of epoch 
-            scheduler.step()
-            print('[End of epoch %d] \n beta : %.3f \n loss: %.3f \n recon_loss: %.3f \n KLloss: %.3f \n -----------------' %
-                          (epoch + 1,
-                           beta,
-                           epoch_loss, 
-                           epoch_recon, 
-                           epoch_KL ))
-                
-        if self.use_tensorboard:
-            self.writer.close()
-        print("Finished")
-        return True
-
+#    def do_train(self, trainloader, n_epoch, wu_time):
+#        
+#        self.train()
+#        
+#        optimizer = optim.Adam(self.parameters(), lr=0.0001)
+#        #scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.7)
+#        
+#        epoch_size = 600
+#        
+#        for epoch in range(n_epoch):
+#            
+#            if epoch < wu_time:
+#                beta = epoch / wu_time
+#            else :
+#                beta = 1
+#            
+#            
+#            epoch_loss = 0.0
+#            epoch_recon = 0.0
+#            epoch_KL = 0.0
+#            
+#            for i, data in enumerate(trainloader):
+#                
+#                #iter = epoch*600 + i
+#                
+#                # get the inputs
+#                raw_inputs, labels = data
+#                
+#                inputs = raw_inputs.view(self.mb_size,self.x_dim)
+#        
+#                # wrap them in Variable
+#                inputs, labels = Variable(inputs), Variable(labels)
+#                inputs = (inputs*2)-1 #normal rescale
+#        
+#                # zero the parameter gradients
+#                optimizer.zero_grad()
+#            
+#                x = inputs
+#                if self.use_cuda:
+#                    x = x.cuda()
+#                
+#                z_mu, z_logvar = self.encode(x)
+#                z = sample_z(z_mu,z_logvar, self.mb_size, self.z_dim, self.use_cuda) 
+#                x_recon_mu, x_recon_logvar = self.decode(z)
+#
+#                recon_loss, kl_loss = self.G_loss(x, x_recon_mu, x_recon_logvar, z_mu, z_logvar)
+#                
+#                loss = recon_loss + beta*kl_loss
+#                
+#                if i == epoch_size-1 :
+#                    if self.use_tensorboard:
+#                        #TENSORBOARD VISUALIZATION
+#                        for name, param in self.named_parameters():
+#                            self.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch+1)
+#                        
+#                        epoch_loss += loss.data[0]
+#                        epoch_recon += recon_loss.data[0]
+#                        epoch_KL += kl_loss.data[0]
+#                            
+#                        self.writer.add_scalars('avglosses', {'loss': epoch_loss/epoch_size,
+#                                                           'Recon_loss': epoch_recon/epoch_size,
+#                                                           'KL_loss': epoch_KL/epoch_size},
+#                                                            epoch+1)
+#                        if np.mod(epoch,50) == 0:
+#                            for j in range(2):
+#                                original = inputs[j]
+#                                original = original.view(28,28)
+#                                self.writer.add_image('Original_'+str(epoch)+str(j), original, epoch)
+#                                
+#                                img_rec = x_recon_mu[j]
+#                                img_rec = img_rec.view(28,28)
+#                                self.writer.add_image('Reconstructed_'+str(epoch)+str(j), img_rec, epoch)
+#                
+#                #Annealing
+#                
+#    
+#                # BACKPROP
+#                loss.backward()
+##                for layer in self.parameters():
+##                    layer.grad[layer.grad>1e3] = 1e3
+#                optimizer.step()
+#                
+#            #end of epoch 
+#            #scheduler.step()
+#            print('[End of epoch %d] \n beta : %.3f \n loss: %.3f \n recon_loss: %.3f \n KLloss: %.3f \n -----------------' %
+#                          (epoch + 1,
+#                           beta,
+#                           epoch_loss, 
+#                           epoch_recon, 
+#                           epoch_KL ))
+#                
+#        if self.use_tensorboard:
+#            self.writer.close()
+#        print("Finished")
+#        return True
+#
