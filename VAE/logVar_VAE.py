@@ -86,20 +86,34 @@ class Vanilla_VAE(nn.Module):
 
         
     def encode(self, x):
-        h1 = self.use_bn and self.enc_norm1(self.xh1(x)) or self.xh1(x)
-        h1 = F.relu(h1)
-        h2 = self.use_bn and self.enc_norm2(self.h1h2(h1)) or self.h1h2(h1)
-        h2 = F.relu(h2)
+        if self.use_bn:
+            h1 = self.enc_norm1(self.xh1(x))
+            h1 = F.relu(h1)
+            h2 = self.enc_norm2(self.h1h2(h1))
+            h2 = F.relu(h2)
+        else:
+            h1 = self.xh1(x)
+            h1 = F.relu(h1)
+            h2 = self.h1h2(h1)
+            h2 = F.relu(h2)
+            
         z_mu = self.hz_mu(h2)
         z_logvar = self.hz_logvar(h2)
         return z_mu, z_logvar
     
     
     def decode(self, z):
-        h2 = self.use_bn and self.dec_norm2(self.zh2(z)) or self.zh2(z)
-        h2 = F.relu(h2)
-        h1 = self.use_bn and self.dec_norm1(self.h2h1(h2)) or self.h2h1(h2)
-        h1 = F.relu(h1)
+        if self.use_bn:
+            h2 = self.dec_norm2(self.zh2(z))
+            h2 = F.relu(h2)
+            h1 = self.dec_norm1(self.h2h1(h2))
+            h1 = F.relu(h1)
+        else:
+            h2 = self.zh2(z)
+            h2 = F.relu(h2)
+            h1 = self.h2h1(h2)
+            h1 = F.relu(h1)
+            
         x_mu = self.hx_mu(h1)
         x_logvar = self.hx_logvar(h1)
         return x_mu, x_logvar
