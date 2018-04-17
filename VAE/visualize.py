@@ -21,6 +21,7 @@ except:
 
 from torch.autograd import Variable
 import numpy as np
+import torch
 
 
 
@@ -54,7 +55,7 @@ def plotInOut(test_set, vae):
         
         
         
-def saveInOut(test_set, vae, name):
+def saveInOut(test_set, vae, name, cuda):
     
     fig = plt.figure()
     
@@ -65,6 +66,9 @@ def saveInOut(test_set, vae, name):
         idx = i+1
         
         raw_inputs, labels = data
+        if cuda:
+            raw_inputs = raw_inputs.cuda()
+            
         inputs = raw_inputs.view((1,1,28*28))
         
         #inputs, labels = Variable(torch.FloatTensor(1*(inputs.numpy()>0.5))), Variable(labels)

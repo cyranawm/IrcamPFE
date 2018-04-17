@@ -26,6 +26,7 @@ use_cuda = torch.cuda.is_available()
 
 
 
+
 x_dim = 28*28
 h1_dim = 500
 h2_dim = 200
@@ -105,7 +106,7 @@ for epoch in range(n_epoch):
         
 #TO DO AT THE END OF AN EPOCH
     #scheduler.step()
-    if np.mod(epoch,50):
+    if np.mod(epoch,50) == 0:
         saveInOut(testloader, vae1, 'check_epoch'+str(epoch)+'.png')
     
     ###################   TENSORBOARD VISUALIZATION   ##############
