@@ -39,7 +39,10 @@ z_dim = 10
 
 mb_size = 100
 
-vae1 = Vanilla_VAE(x_dim, h1_dim, h2_dim, z_dim, mb_size, use_cuda, use_tensorboard)
+use_bn = False
+
+vae1 = Vanilla_VAE(x_dim, h1_dim, h2_dim, z_dim, mb_size, use_cuda, use_bn, use_tensorboard)
+print(vae1)
 
 if use_cuda :
     torch.cuda.set_device(1)

@@ -16,6 +16,7 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.legacy.nn as lnn
 
 import torch.utils.data as data_utils
 
@@ -28,11 +29,11 @@ def sample_z(mu, logvar, mb_size, Z_dim, use_cuda):
     # Using reparameterization trick to sample from a gaussian
     
     if use_cuda:
-        eps = Variable(torch.randn(mb_size, Z_dim))
-        res = mu + torch.exp(0.5*logvar.cuda()) * eps.cuda()
+        eps = Variable(torch.randn(mb_size, Z_dim), requires_grad=False)
+        res = mu + (torch.exp(0.5*logvar) * eps.cuda())
     else:
         eps = Variable(torch.randn(mb_size, Z_dim))
-        res = mu + torch.exp(0.5*logvar) * eps
+        res = mu + (torch.exp(0.5*logvar) * eps)
     
     return res
 
@@ -45,7 +46,8 @@ class Vanilla_VAE(nn.Module):
                  h2_dim,
                  z_dim, 
                  mb_size = 100, 
-                 use_cuda = False, 
+                 use_cuda = False,
+                 use_bn = False,
                  use_tensorboard = False):
         
         super(Vanilla_VAE, self).__init__()
@@ -73,9 +75,9 @@ class Vanilla_VAE(nn.Module):
     
         #DECODER LAYERS
         self.zh2 = nn.Linear(z_dim, h2_dim)
-        self.dec_norm1 = nn.BatchNorm1d(h2_dim)
+        self.dec_norm2 = nn.BatchNorm1d(h2_dim)
         self.h2h1 = nn.Linear(h2_dim, h1_dim)
-        self.dec_norm2 = nn.BatchNorm1d(h1_dim)
+        self.dec_norm1 = nn.BatchNorm1d(h1_dim)
         self.hx_mu = nn.Linear(h1_dim, x_dim)
         self.hx_logvar = nn.Linear(h1_dim, x_dim)
         
@@ -84,20 +86,20 @@ class Vanilla_VAE(nn.Module):
 
         
     def encode(self, x):
-        h1 = F.relu6(self.xh1(x))
-        h1 = self.enc_norm1(h1)
-        h2 = F.relu6(self.h1h2(h1))
-        h2 = self.enc_norm2(h2)
+        h1 = self.use_bn and self.enc_norm1(self.xh1(x)) or self.xh1(x)
+        h1 = F.relu(h1)
+        h2 = self.use_bn and self.enc_norm2(self.h1h2(h1)) or self.h1h2(h1)
+        h2 = F.relu(h2)
         z_mu = self.hz_mu(h2)
         z_logvar = self.hz_logvar(h2)
         return z_mu, z_logvar
     
     
     def decode(self, z):
-        h2 = F.relu6(self.zh2(z))
-        h2 = self.dec_norm1(h2)
-        h1 = self.h2h1(h2)
-        h1 = self.dec_norm2(h1)
+        h2 = self.use_bn and self.dec_norm2(self.zh2(z)) or self.zh2(z)
+        h2 = F.relu(h2)
+        h1 = self.use_bn and self.dec_norm1(self.h2h1(h2)) or self.h2h1(h2)
+        h1 = F.relu(h1)
         x_mu = self.hx_mu(h1)
         x_logvar = self.hx_logvar(h1)
         return x_mu, x_logvar
@@ -107,12 +109,12 @@ class Vanilla_VAE(nn.Module):
         
         #z_sigma = z_var.sqrt()+1e-8
         
-        recon= x_recon_logvar.add(np.log(2.0 * np.pi))+  (x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar) + 1e-8)
+        recon= x_recon_logvar.add(np.log(2.0 * np.pi)) + (x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar) + 1e-8)
         recon = 0.5 * torch.sum(recon,1)
         recon = torch.mean(recon)
         #recon /= (self.mb_size * self.x_dim)
     
-        kl_loss = torch.exp(z_logvar) + z_mu**2 - 1. - z_logvar
+        kl_loss = torch.exp(z_logvar) + (z_mu**2) - 1. - z_logvar
         kl_loss = 0.5 * torch.sum(kl_loss,1) #no size average
         kl_loss = torch.mean(kl_loss)
         
