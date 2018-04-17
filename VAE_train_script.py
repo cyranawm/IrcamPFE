@@ -48,9 +48,8 @@ if use_cuda :
     torch.cuda.set_device(1)
     print("**************************** USING CUDA ****************************")
     vae1.cuda()
-
-
-
+    
+#%%
 trainloader = load_MNIST(vae1.mb_size)
 
 

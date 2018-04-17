@@ -52,11 +52,14 @@ class Vanilla_VAE(nn.Module):
         
         super(Vanilla_VAE, self).__init__()
         
-        self.use_tensorboard = use_tensorboard
-        
+        self.use_tensorboard = use_tensorboard 
         if use_tensorboard:
             from tensorboardX import SummaryWriter
             self.writer = SummaryWriter()
+        
+        self.use_cuda = use_cuda
+        
+        self.use_bn = use_bn
         
         #PARAMS
         self.x_dim = x_dim
@@ -81,8 +84,13 @@ class Vanilla_VAE(nn.Module):
         self.hx_mu = nn.Linear(h1_dim, x_dim)
         self.hx_logvar = nn.Linear(h1_dim, x_dim)
         
-        self.use_cuda = use_cuda
-
+        #INIT
+        #for name, param in self.named
+        for name, param in self.named_parameters():
+            if ('weight' in name) and (not 'norm' in name):
+                nn.init.xavier_normal(param)
+            elif ('bias' in name) and (not 'norm' in name):
+                nn.init.uniform(param,0,0)
 
         
     def encode(self, x):
