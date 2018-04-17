@@ -107,7 +107,7 @@ for epoch in range(n_epoch):
 #TO DO AT THE END OF AN EPOCH
     #scheduler.step()
     if np.mod(epoch,50) == 0:
-        saveInOut(testloader, vae1, 'check_epoch'+str(epoch)+'.png')
+        saveInOut(testloader, vae1, 'check_epoch'+str(epoch)+'.png', cuda = use_cuda)
     
     ###################   TENSORBOARD VISUALIZATION   ##############
     if vae1.use_tensorboard:
