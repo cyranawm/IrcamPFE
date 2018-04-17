@@ -32,7 +32,7 @@ def sample_z(mu, logvar, mb_size, Z_dim, use_cuda):
         eps = Variable(torch.randn(mb_size, Z_dim), requires_grad=False)
         res = mu + (torch.exp(0.5*logvar) * eps.cuda())
     else:
-        eps = Variable(torch.randn(mb_size, Z_dim))
+        eps = Variable(torch.randn(mb_size, Z_dim), requires_grad=False)
         res = mu + (torch.exp(0.5*logvar) * eps)
     
     return res
@@ -84,8 +84,7 @@ class Vanilla_VAE(nn.Module):
         self.hx_mu = nn.Linear(h1_dim, x_dim)
         self.hx_logvar = nn.Linear(h1_dim, x_dim)
         
-        #INIT
-        #for name, param in self.named
+        #INIT XAVIER (weights) AND ZERO (biases)
         for name, param in self.named_parameters():
             if ('weight' in name) and (not 'norm' in name):
                 nn.init.xavier_normal(param)
@@ -116,19 +115,19 @@ class Vanilla_VAE(nn.Module):
     
 
     def G_loss(self, x, x_recon_mu, x_recon_logvar, z_mu, z_logvar):
-        
-        #z_sigma = z_var.sqrt()+1e-8
-        
+                
         recon= x_recon_logvar.add(np.log(2.0 * np.pi)) + (x-x_recon_mu).pow(2).div(torch.exp(x_recon_logvar) + 1e-8)
         recon = 0.5 * torch.sum(recon,1)
         recon = torch.mean(recon)
-        #recon /= (self.mb_size * self.x_dim)
     
         kl_loss = torch.exp(z_logvar) + (z_mu**2) - 1. - z_logvar
-        kl_loss = 0.5 * torch.sum(kl_loss,1) #no size average
+        kl_loss = 0.5 * torch.sum(kl_loss,1)
         kl_loss = torch.mean(kl_loss)
         
-        #loss = recon + kl_loss
+#        rec_error = torch.mean(torch.sum(torch.sum(0.5*(logvar_g+(target-mu_g).pow(2).div(torch.exp(logvar_g).add(1e-7))+np.log(2*np.pi)),2),1))
+#        KLD = 0.5*(-logvar_z+torch.exp(logvar_z)+mu_z.pow(2)-1.) # prior is unit gaussian here
+#        KLD = torch.mean(torch.sum(KLD,1))
+      
         return recon, kl_loss
     
     
