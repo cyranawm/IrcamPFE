@@ -72,7 +72,7 @@ def saveInOut(test_set, vae, name, cuda):
         inputs = raw_inputs.view((1,1,28*28))
         
         #inputs, labels = Variable(torch.FloatTensor(1*(inputs.numpy()>0.5))), Variable(labels)
-        inputs, labels = Variable(inputs), Variable(labels)
+        inputs = Variable(inputs)
 
         z = vae.encode(inputs)[0]
         recon = vae.decode(z)[0]
@@ -81,10 +81,10 @@ def saveInOut(test_set, vae, name, cuda):
         recon = recon.view(28,28)
 
         #print(recon)
-        plt.subplot(2,4,idx)
+        plt.subplot(2,10,idx)
         plt.imshow(raw_inputs.clone().cpu())
-        plt.subplot(2,4,4+idx)
-        plt.imshow(recon.data.clone().cpu().numpy())
+        plt.subplot(2,10,10+idx)
+        plt.imshow(recon.clone().cpu().data.numpy())
     
     fig.savefig('./results/images/' + name)
         
