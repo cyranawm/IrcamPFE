@@ -64,6 +64,7 @@ def saveInOut(test_set, vae, name, cuda):
             break
         
         idx = i+1
+        print(idx)
         
         raw_inputs, labels = data
         if cuda:
