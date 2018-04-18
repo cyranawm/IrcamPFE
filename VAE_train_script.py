@@ -119,12 +119,14 @@ for epoch in range(n_epoch):
     if np.mod(epoch,50) == 0:
         
         raw = raw_inputs.view(vae1.mb_size, 28, 28)
+        print(raw.size())
         x_recon = x_recon_mu.view(vae1.mb_size,28,28)
         
         fig = plt.figure()
         for idx in range(1,6):
         #print(recon)
             plt.subplot(2,5,idx)
+            print(raw_inputs[idx].clone().cpu().size())
             plt.imshow(raw_inputs[idx].clone().cpu())
             plt.subplot(2,5,5+idx)
             plt.imshow(x_recon[idx].clone().cpu().data)
