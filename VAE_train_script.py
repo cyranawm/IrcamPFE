@@ -126,8 +126,8 @@ for epoch in range(n_epoch):
         for idx in range(1,6):
         #print(recon)
             plt.subplot(2,5,idx)
-            print(raw_inputs[idx].clone().cpu().size())
-            plt.imshow(raw_inputs[idx].clone().cpu())
+            print(raw[idx].clone().cpu().size())
+            plt.imshow(raw[idx].clone().cpu())
             plt.subplot(2,5,5+idx)
             plt.imshow(x_recon[idx].clone().cpu().data)
         fig.savefig('./results/images/check_epoch'+str(epoch)+'.png' )
