@@ -20,6 +20,16 @@ import torch
 import torch.optim as optim
 from torch.autograd import Variable
 
+try:
+    import matplotlib
+    from matplotlib import pyplot as plt
+except:
+    import sys
+    sys.path.append("/usr/local/lib/python3.6/site-packages/")
+    import matplotlib
+    matplotlib.use('agg')
+    import matplotlib.pyplot as plt
+
 
 
 use_cuda = torch.cuda.is_available()
@@ -107,7 +117,15 @@ for epoch in range(n_epoch):
 #TO DO AT THE END OF AN EPOCH
     #scheduler.step()
     if np.mod(epoch,50) == 0:
-        saveInOut(testloader, vae1, 'check_epoch'+str(epoch)+'.png', cuda = use_cuda)
+        
+        x_recon = x_recon_mu.view(vae1.mb_size,28,28)
+        
+        for idx in range(1,6):
+        #print(recon)
+            plt.subplot(2,5,idx)
+            plt.imshow(raw_inputs[idx].clone().cpu())
+            plt.subplot(2,5,5+idx)
+            plt.imshow(x_recon[idx].clone().cpu().data.numpy())
     
     ###################   TENSORBOARD VISUALIZATION   ##############
     if vae1.use_tensorboard:
