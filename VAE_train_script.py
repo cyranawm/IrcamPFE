@@ -12,7 +12,7 @@ use_bn = True
 
 from VAE.logVar_VAE import Vanilla_VAE
 from VAE.logVar_VAE import sample_z
-from VAE.visualize import saveInOut
+#from VAE.visualize import saveInOut
 
 import numpy as np
 from datasets.MNIST import load_MNIST, test_MNIST
@@ -118,14 +118,17 @@ for epoch in range(n_epoch):
     #scheduler.step()
     if np.mod(epoch,50) == 0:
         
+        raw = raw_inputs.view(vae1.mb_size, 28, 28)
         x_recon = x_recon_mu.view(vae1.mb_size,28,28)
         
+        fig = plt.figure()
         for idx in range(1,6):
         #print(recon)
             plt.subplot(2,5,idx)
             plt.imshow(raw_inputs[idx].clone().cpu())
             plt.subplot(2,5,5+idx)
-            plt.imshow(x_recon[idx].clone().cpu().data.numpy())
+            plt.imshow(x_recon[idx].clone().cpu().data)
+        fig.savefig('./results/images/check_epoch'+str(epoch)+'.png' )
     
     ###################   TENSORBOARD VISUALIZATION   ##############
     if vae1.use_tensorboard:
