@@ -8,7 +8,7 @@ Created on Fri Mar 23 12:47:18 2018
 
 
 use_tensorboard = True
-use_bn = False
+use_bn = True
 
 from VAE.logVar_VAE import Vanilla_VAE
 from VAE.logVar_VAE import sample_z
