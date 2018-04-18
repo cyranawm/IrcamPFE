@@ -61,10 +61,9 @@ def saveInOut(test_set, vae, name, cuda):
     
     for i, data in enumerate(test_set):
         if i > 10:
-            break
+            return True
         
         idx = i+1
-        print(idx)
         
         raw_inputs, labels = data
         if cuda:
