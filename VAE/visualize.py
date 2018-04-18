@@ -60,12 +60,10 @@ def saveInOut(test_set, vae, name, cuda):
     fig = plt.figure()
     
     for i, data in enumerate(test_set):
-        if i > 10:
-            print("HAHA")
-            return True
+        if i >= 10:
+            break
         
         idx = i+1
-        print(i,idx)
         
         raw_inputs, labels = data
         if cuda:
