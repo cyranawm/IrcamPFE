@@ -131,7 +131,17 @@ for epoch in range(n_epoch):
             plt.subplot(2,5,5+idx)
             plt.imshow(x_recon[idx].clone().cpu().data)
         fig.savefig('./results/images/check_epoch'+str(epoch)+'.png' )
-    
+        
+    if (np.mod(epoch,100) == 0 and epoch != 0):
+        name = str(epoch)+'ep_test1'
+        savepath = 'results/'+name
+        
+        if use_cuda:
+            vae1.cpu()        
+        torch.save(vae1.state_dict(), savepath)        
+        if use_cuda:
+            vae1.cuda()
+        
     ###################   TENSORBOARD VISUALIZATION   ##############
     if vae1.use_tensorboard:
         for name, param in vae1.named_parameters():
@@ -169,7 +179,7 @@ if use_cuda:
     vae1.cpu()
 
 
-name = 'test1'
+name = 'final_test1'
 savepath = 'results/'+name
 torch.save(vae1.state_dict(), savepath)
 

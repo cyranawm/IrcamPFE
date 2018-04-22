@@ -24,10 +24,11 @@ savepath = 'results/'+name
 state_dict = torch.load(savepath)
 
 x_dim = 28*28
-h_dim = 500
+h1_dim = 500
+h2_dim = 200
 z_dim = 10
 
-vae1 = Vanilla_VAE(x_dim,h_dim,z_dim, use_cuda = False)
+vae1 = Vanilla_VAE(x_dim,h1_dim,h2_dim,z_dim, use_cuda = False)
 vae1.load_state_dict(state_dict)
 vae1.eval()
 
@@ -37,18 +38,18 @@ plotInOut(testloader,vae1)
 
 
 #%%   CONV VAE
-
-name = 'conv1'
-savepath = 'results/'+name
-
-state_dict = torch.load(savepath)
-
-h_dim = 500
-z_dim = 10
-
-vae1 = Conv_VAE(h_dim,z_dim, use_cuda = False)
-vae1.load_state_dict(state_dict)
-
-#%%
-
-plotInOut_Conv(testloader,vae1)
+#
+#name = 'conv1'
+#savepath = 'results/'+name
+#
+#state_dict = torch.load(savepath)
+#
+#h_dim = 500
+#z_dim = 10
+#
+#vae1 = Conv_VAE(h_dim,z_dim, use_cuda = False)
+#vae1.load_state_dict(state_dict)
+#
+##%%
+#
+#plotInOut_Conv(testloader,vae1)
