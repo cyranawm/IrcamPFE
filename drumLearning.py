@@ -33,7 +33,7 @@ def importDataset():
     transformOptions = dict(audioOptions)
     transformOptions["transformTypes"] = ['nsgt-cqt']
     transformOptions["transformNames"] = ['nsgt-cqt']
-    transformOptions['forceRecompute'] = True
+    transformOptions['forceRecompute'] = False
     
     transformParameters = [transformParameters]
     transformParameters[0]['targetDuration'] = 1
