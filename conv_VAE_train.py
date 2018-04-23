@@ -30,7 +30,6 @@ except:
     import matplotlib.pyplot as plt
 
 #Compute transforms and load data
-rootDirectory = ""
 dataset = importDataset()
 mb_size = 100
 dataloader = DataLoader(dataset, mb_size)
@@ -50,7 +49,7 @@ h_dims = []
 z_dim = 0
 
 #Hyper parameters : non-linearity? batchnorm? dropout?
-nnLin = " " #relu or tanh or sig 
+nnLin = ['relu','none'] #[h_act, out_act] with 'relu' or 'tanh' or 'elu' or 'none'
 use_cuda = torch.cuda.is_available()
 use_bn = False
 dropout = False # False or a prob between 0 and 1

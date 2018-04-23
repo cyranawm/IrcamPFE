@@ -27,10 +27,23 @@ def conv_loss(target, rec_mu, rec_logvar, z_mu, z_logvar):
     
     return recon_loss, KL_loss
 
+
+    
+
 class Conv_VAE(nn.Module):
     def __init__(self, conv_list, h_dims, z_dim, deconv_list, nnLin, use_bn, dropout ):
         super(Conv_VAE, self).__init__()
-        #Flags
+        
+        activation = {
+                'relu' : nn.ReLU(),
+                'tanh' : nn.Tanh(),
+                'elu' : nn.ELU(),
+                'none' : nn.Sequential()
+                }
+        
+        h_nnLin = activation[nnLin[0]]
+        out_nnLin = activation[nnLin[1]]
+        
         
         #ENCODER LAYERS
         #CONV
@@ -42,7 +55,7 @@ class Conv_VAE(nn.Module):
             if use_bn:
                 name = "enc_conv" + str(n) +"_norm"
                 self.enc_conv.add_module(name,nn.BatchNorm2d(conv[1]))
-            self.enc_conv.add_module("enc_conv" + str(n) +"_act",nnLin)
+            self.enc_conv.add_module("enc_conv" + str(n) +"_act",h_nnLin)
             if dropout:
                 name = "enc_conv" + str(n) +"_drop"
                 self.enc_conv.add_module(name, nn.Dropout2d(p=dropout))
@@ -57,7 +70,7 @@ class Conv_VAE(nn.Module):
             if use_bn:
                 name = "enc_lin" + str(n) +"_norm"
                 self.enc_MLP.add_module(name,nn.BatchNorm1d(h_dim[1]))
-            self.enc_MLP.add_module("enc_lin" + str(n) +"_act",nnLin)
+            self.enc_MLP.add_module("enc_lin" + str(n) +"_act",h_nnLin)
             if dropout:
                 name = "enc_lin" + str(n) +"_drop"
                 self.enc_MLP.add_module(name, nn.Dropout(p=dropout))
@@ -66,7 +79,7 @@ class Conv_VAE(nn.Module):
         last_h_dim = h_dim[1]
         self.hz_mu = nn.Linear(last_h_dim, z_dim)
         self.hz_logvar = nn.Linear(last_h_dim, z_dim)
-        #ACTIVATIONS VERS Z ??
+        #ACTIVATIONS VERS Z ?? out_nnLin
         
         #DECODER LAYERS
         #MLP
@@ -80,12 +93,12 @@ class Conv_VAE(nn.Module):
             if use_bn:
                 name = "dec_lin" + str(n) +"_norm"
                 self.dec_MLP.add_module(name,nn.BatchNorm1d(h_dim[1]))
-            self.dec_MLP.add_module("dec_lin" + str(n) +"_act",nnLin)
+            self.dec_MLP.add_module("dec_lin" + str(n) +"_act",h_nnLin)
             if dropout:
                 name = "dec_lin" + str(n) +"_drop"
                 self.dec_MLP.add_module(name, nn.Dropout(p=dropout))   
                 
-        #DECONV A finir
+        #DECONV
         self.dec_conv = nn.Sequential()
         for n, deconv in enumerate(deconv_list[:-1]):
             name = "dec_conv"+str(n)
@@ -94,7 +107,7 @@ class Conv_VAE(nn.Module):
             if use_bn:
                 name = "dec_conv" + str(n) +"_norm"
                 self.dec_conv.add_module(name,nn.BatchNorm2d(deconv[1]))
-            self.dec_conv.add_module("dec_conv" + str(n) +"_act",nnLin)
+            self.dec_conv.add_module("dec_conv" + str(n) +"_act",h_nnLin)
             if dropout:
                 name = "dec_conv" + str(n) +"_drop"
                 self.dec_conv.add_module(name, nn.Dropout2d(p=dropout))   

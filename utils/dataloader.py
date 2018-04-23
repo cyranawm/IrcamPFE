@@ -5,7 +5,7 @@ from random import shuffle
 def permutation(length):
     p = list(range(length))
     shuffle(p)
-    return p
+    return np.array(p)
 
 class DataLoader(object):
     def __init__(self, dataset, batch_size, task=None, partition=None, transforms=[], *args, **kwargs):
