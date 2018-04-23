@@ -17,7 +17,7 @@ def importDataset():
       "importCallback":None,                                  # Function to perform import of data
       "transformCallback":None,                               # Function to transform data (can be a list)
       "transformName":'nsgt-cqt',                            # Name of the imported transform
-      "tasks":['genre'],                                      # Tasks to import
+      "tasks":['instrument'],                                      # Tasks to import
       "taskCallback":None,                                    # Function to import task metadata
       "verbose":True,                                         # Be verbose or not
       "checkIntegrity":True,                                  # Check that files exist (while loading)
@@ -27,6 +27,9 @@ def importDataset():
     
     audioSet = DatasetAudio(audioOptions);
     audioSet.listDirectory();
+    
+    print('[Import metadata]');
+    audioSet.importMetadataTasks();
     
     print('[Compute transforms]')
     transformList, transformParameters= audioSet.getTransforms();
