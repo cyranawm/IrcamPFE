@@ -13,6 +13,7 @@ def importDataset():
     audioOptions = {
       "dataDirectory":'/fast-1/DrumsDataset/data',              
       "dataPrefix":'/fast-1/DrumsDataset', 
+      "metadataDirectory":'/fast-1/DrumsDataset/metadata',                        
       "analysisDirectory":'/fast-1/DrumsDataset/analysis',# Root to place (and find) the transformed data
       "importCallback":None,                                  # Function to perform import of data
       "transformCallback":None,                               # Function to transform data (can be a list)
