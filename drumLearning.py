@@ -1,11 +1,11 @@
-from data.sets.generic import Dataset
-from data.sets.audio import DatasetAudio
-from data.sets.midi import DatasetMidi
-from data.sets.timeseries import DatasetTimeSeries
-from data.sets.metadata import importRawLabel
-from data.sets import utils
+from aciditools.data.sets.generic import Dataset
+from aciditools.data.sets.audio import DatasetAudio
+from aciditools.data.sets.midi import DatasetMidi
+from aciditools.data.sets.timeseries import DatasetTimeSeries
+from aciditools.data.sets.metadata import importRawLabel
+from aciditools.data.sets import utils
 # Add extraneous imports 
-from asynchronous.task import AsynchronousTask
+from aciditools.asynchronous.task import AsynchronousTask
 import gc
 
 
