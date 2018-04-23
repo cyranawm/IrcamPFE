@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+from random import shuffle
+
+def permutation(length):
+    p = list(range(length))
+    shuffle(p)
+    return p
 
 class DataLoader(object):
     def __init__(self, dataset, batch_size, task=None, partition=None, transforms=[], *args, **kwargs):
@@ -9,7 +15,7 @@ class DataLoader(object):
         if not issubclass(type(self.transforms), list):
             self.transforms = [self.transforms]
         if partition is None:
-            random_indices = permutation(length(dataset.data)) 
+            random_indices = permutation(len(dataset.data)) 
         else:
             partition_ids = dataset.partitions[partition]
             random_indices = partition_ids[permutation(len(partition_ids))]

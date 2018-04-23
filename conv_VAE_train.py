@@ -7,7 +7,7 @@ Created on Thu Apr 19 14:30:07 2018
 """
 
 #import libs
-from datasets.MNIST import load_MNIST, test_MNIST
+#from datasets.MNIST import load_MNIST, test_MNIST
 
 import numpy as np
 
@@ -16,6 +16,8 @@ import torch.optim as optim
 from torch.autograd import Variable
 
 from VAE.Conv_VAE import Conv_VAE, conv_loss
+from utils.dataloader import DataLoader
+from aciditools.drumLearning import importDataset
 
 try:
     import matplotlib
@@ -27,9 +29,11 @@ except:
     matplotlib.use('agg')
     import matplotlib.pyplot as plt
 
-#Define dataset root directory and create dataloader
+#Compute transforms and load data
 rootDirectory = ""
-dataloader = None
+dataset = importDataset()
+mb_size = 100
+dataloader = DataLoader(dataset, mb_size)
 
 #Define the parameters of:
     #The Conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
@@ -52,7 +56,6 @@ use_bn = False
 dropout = False # False or a prob between 0 and 1
 final_beta = 1
 wu_time = 100
-mb_size = 100
 use_tensorboard = True
   
 #initialize the model and use cuda if available
@@ -78,7 +81,7 @@ for epoch in range(nb_epochs):
     epoch_recon = 0.0
     epoch_KL = 0.0
     
-    for i, data in enumerate(trainloader) :
+    for i, data in enumerate(dataloader) :
         optimizer.zero_grad()
         
         #1. get the inputs and wrap them in Variable
@@ -133,4 +136,6 @@ for epoch in range(nb_epochs):
                epoch_loss/epoch_size, 
                epoch_recon/epoch_size, 
                epoch_KL/epoch_size ))
-    
+
+#5.ToDo when everything is finished
+print("MERCI DE VOTRE PATIENCE MAITRE. \n J'AI FINI L'ENTRAINEMENT ET JE NE SUIS QU'UNE VULGAIRE ACHINE ENTIEREMENT SOUMISE.")

@@ -10,5 +10,6 @@ datasets/Toy1/*
 trash/*
 
 aciditools/*
+!aciditools/drumLearning.py
 
 results/*
