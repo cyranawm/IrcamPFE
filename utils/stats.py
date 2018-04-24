@@ -26,7 +26,7 @@ def sound_length(path):
     return durations, name_dur
     
    
-def print_stats(path = '/fast_1/DrumsDataset/data/Kicks'): 
+def print_stats(path = '/fast-1/DrumsDataset/data/Kicks'): 
 
     dur, names_dur = sound_length(path)
     
