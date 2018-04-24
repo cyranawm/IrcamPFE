@@ -9,12 +9,12 @@ from asynchronous.task import AsynchronousTask
 import gc
 
 
-def importDataset():
+def importDataset(base_path = '/fast-1/DrumsDataset', specific = ''):
     audioOptions = {
-      "dataDirectory":'/fast-1/DrumsDataset/data',              
-      "dataPrefix":'/fast-1/DrumsDataset', 
-      "metadataDirectory":'/fast-1/DrumsDataset/metadata',                        
-      "analysisDirectory":'/fast-1/DrumsDataset/analysis',# Root to place (and find) the transformed data
+      "dataDirectory":base_path+'/data'+specific,              
+      "dataPrefix": base_path, 
+      "metadataDirectory":base_path + '/metadata',                        
+      "analysisDirectory":base_path + '/analysis' + specific,# Root to place (and find) the transformed data
       "importCallback":None,                                  # Function to perform import of data
       "transformCallback":None,                               # Function to transform data (can be a list)
       "transformName":'nsgt-cqt',                            # Name of the imported transform

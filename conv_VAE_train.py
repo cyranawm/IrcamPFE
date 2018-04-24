@@ -9,16 +9,6 @@ Created on Thu Apr 19 14:30:07 2018
 #import libs
 #from datasets.MNIST import load_MNIST, test_MNIST
 
-import numpy as np
-
-import torch
-import torch.optim as optim
-from torch.autograd import Variable
-
-from VAE.Conv_VAE import Conv_VAE, conv_loss
-from utils.dataloader import DataLoader
-from aciditools.drumLearning import importDataset
-
 try:
     import matplotlib
     from matplotlib import pyplot as plt
@@ -29,33 +19,46 @@ except:
     matplotlib.use('agg')
     import matplotlib.pyplot as plt
 
+import numpy as np
+
+import torch
+import torch.optim as optim
+from torch.autograd import Variable
+
+from VAE.Conv_VAE import Conv_VAE, conv_loss
+from utils.dataloader import DataLoader
+from aciditools.drumLearning import importDataset #TODO : MARCHE PAS
+
+
+
 #Compute transforms and load data
-dataset = importDataset()
+dataset = importDataset(base_path, specific)
+in_shape = dataset.get(0).shape
 mb_size = 100
-dataloader = DataLoader(dataset, mb_size)
+dataloader = DataLoader(dataset, mb_size, task = 'instrument') 
 
 #Define the parameters of:
     #The Conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
-conv1 = []
-conv2 = []
+conv1 = [1, 8, (20,10), (10,5), (2,2)]
+conv2 = [8, 16, (10,5), (4,4), (0,2)]
 conv = [conv1, conv2]
     #The Deconv Layers: [in_channels, out_channels, kernel_size, stride, padding, output_padding]
-deconv1 = []
-deconv2 = []
+deconv1 = [16, 8, (10,5), (4,4), (0,2), (1,1)]
+deconv2 = [8, 1, (13,9), (10,5), (0,2)]
 deconv = [deconv1, deconv2]
 
     #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
-h_dims = []
-z_dim = 0
+h_dims = [2016, 512]
+z_dim = 32
 
 #Hyper parameters : non-linearity? batchnorm? dropout?
 nnLin = ['relu','none'] #[h_act, out_act] with 'relu' or 'tanh' or 'elu' or 'none'
 use_cuda = torch.cuda.is_available()
-use_bn = False
-dropout = False # False or a prob between 0 and 1
+use_bn = True
+dropout = 0.2 # False or a prob between 0 and 1
 final_beta = 1
 wu_time = 100
-use_tensorboard = True
+use_tensorboard = True #True, False or 'Full' (histograms)
   
 #initialize the model and use cuda if available
 vae = Conv_VAE(conv, h_dims, z_dim, deconv, nnLin, use_bn, dropout)
@@ -80,12 +83,16 @@ for epoch in range(nb_epochs):
     epoch_recon = 0.0
     epoch_KL = 0.0
     
-    for i, data in enumerate(dataloader) :
+    for i, data in enumerate(dataloader) : #TODO : enumerate chie dans la colle
         optimizer.zero_grad()
         
         #1. get the inputs and wrap them in Variable
-        raw_inputs, labels = data        
-        x, labels = Variable(raw_inputs), Variable(labels)
+        raw_inputs, labels = data
+        pre_process = np.real(raw_inputs)
+        pre_process = np.log(pre_process)
+        pre_process = torch.from_numpy(pre_process) 
+        pre_process = pre_process.view(mb_size,1,in_shape[0], in_shape[1]) #TODO : verif
+        x, labels = Variable(pre_process), Variable(labels)
         if use_cuda:
             x = x.cuda()
         
@@ -110,13 +117,15 @@ for epoch in range(nb_epochs):
     
     #Tensorboard log
     if use_tensorboard:
-        for name, param in vae.named_parameters():
-            vae.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch+1)
-
+        
         vae.writer.add_scalars('avglosses', {'loss': epoch_loss/epoch_size,
                                            'Recon_loss': epoch_recon/epoch_size,
                                            'KL_loss': epoch_KL/epoch_size},
                                             epoch+1)
+        if use_tensorboard == 'Full':
+            for name, param in vae.named_parameters():
+                vae.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch+1)
+  
         
     #Saving images
     if np.mod(epoch,50) == 0:       
@@ -137,4 +146,4 @@ for epoch in range(nb_epochs):
                epoch_KL/epoch_size ))
 
 #5.ToDo when everything is finished
-print("MERCI DE VOTRE PATIENCE MAITRE. \n J'AI FINI L'ENTRAINEMENT ET JE NE SUIS QU'UNE VULGAIRE ACHINE ENTIEREMENT SOUMISE.")
+print("MERCI DE VOTRE PATIENCE MAITRE. \n J'AI FINI L'ENTRAINEMENT ET JE NE SUIS QU'UNE VULGAIRE MACHINE ENTIEREMENT SOUMISE.")
