@@ -27,6 +27,7 @@ import torch
 import torch.optim as optim
 from torch.autograd import Variable
 
+from outils.scaling import scale_data
 from VAE.Conv_VAE import Conv_VAE, conv_loss
 sys.path.append('./aciditools/')
 
@@ -49,6 +50,8 @@ dataset.metadata[task] = np.array(dataset.metadata[task])
 in_shape = dataset.get(0).shape
 mb_size = 100
 dataloader = DataLoader(dataset, mb_size, task) 
+
+
 #%%
 #Define the parameters of:
     #The Conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
@@ -64,6 +67,8 @@ deconv = [deconv1, deconv2]
 h_dims = [[2016, 512]]
 z_dim = 32
 
+
+
 #Hyper parameters : non-linearity? batchnorm? dropout?
 nnLin = ['relu','none'] #[h_act, out_act] with 'relu' or 'tanh' or 'elu' or 'none'
 use_cuda = torch.cuda.is_available()
@@ -72,7 +77,11 @@ dropout = 0.2 # False or a prob between 0 and 1
 final_beta = 1
 wu_time = 100
 use_tensorboard = True #True, False or 'Full' (histograms)
-  
+log_scaling = True
+normalize = 'gaussian'
+
+
+
 #initialize the model and use cuda if available
 vae = Conv_VAE(conv, h_dims, z_dim, deconv, nnLin, use_bn, dropout)
 if use_cuda :
@@ -96,20 +105,17 @@ for epoch in range(nb_epochs):
     epoch_recon = 0.0
     epoch_KL = 0.0
     
-    for i, data in enumerate(dataloader) : #TODO : enumerate chie dans la colle OK
+    for i, data in enumerate(dataloader) : 
         optimizer.zero_grad()
         
         #1. get the inputs and wrap them in Variable
         raw_inputs, labels = data
-        pre_process = np.real(raw_inputs)
-        print('zero:', (pre_process==0).any())
-        print('inf:', (pre_process<0).any())
-        print('min:', np.min(pre_process))
-        pre_process = np.log(pre_process)
-        pre_process, labels = torch.from_numpy(pre_process).float(), torch.from_numpy(labels)
+        pre_process, labels = torch.from_numpy(data).float(), torch.from_numpy(labels)
+        pre_process = torch.abs(pre_process)
+        pre_process = scale_data(pre_process, log_scaling, normalize) 
         if use_cuda:
             pre_process = pre_process.cuda()
-        pre_process = pre_process.view(mb_size,1,in_shape[0], in_shape[1]) #TODO : verif
+        pre_process = pre_process.view(mb_size,1,in_shape[0], in_shape[1])
         x, labels = Variable(pre_process), Variable(labels)
         
         
@@ -163,4 +169,7 @@ for epoch in range(nb_epochs):
                epoch_KL/epoch_size ))
 
 #5.ToDo when everything is finished
+    
+name = 'tamere'
+vae.save(name, use_cuda)
 print("MERCI DE VOTRE PATIENCE MAITRE. \n J'AI FINI L'ENTRAINEMENT ET JE NE SUIS QU'UNE VULGAIRE MACHINE ENTIEREMENT SOUMISE.")
