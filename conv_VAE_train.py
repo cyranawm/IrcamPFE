@@ -96,7 +96,7 @@ for epoch in range(nb_epochs):
         raw_inputs, labels = data
         pre_process = np.real(raw_inputs)
         pre_process = np.log(pre_process)
-        pre_process = torch.from_numpy(pre_process)
+        pre_process, labels = torch.from_numpy(pre_process), torch.from_numpy(labels)
         if use_cuda:
             pre_process = pre_process.cuda()
         pre_process = pre_process.view(mb_size,1,in_shape[0], in_shape[1]) #TODO : verif
