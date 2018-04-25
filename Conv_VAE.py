@@ -102,7 +102,7 @@ class Conv_VAE(nn.Module):
         self.dec_conv = nn.Sequential()
         for n, deconv in enumerate(deconv_list[:-1]):
             name = "dec_conv"+str(n)
-            layer = nn.Conv2d(deconv[0],deconv[1],deconv[2],stride=deconv[3],padding=deconv[4],output_padding = deconv[5]) #[in_channels, out_channels, kernel_size, stride, padding, output_padding]
+            layer = nn.ConvTranspose2d(deconv[0],deconv[1],deconv[2],stride=deconv[3],padding=deconv[4],output_padding = deconv[5]) #[in_channels, out_channels, kernel_size, stride, padding, output_padding]
             self.dec_conv.add_module(name, layer)
             if use_bn:
                 name = "dec_conv" + str(n) +"_norm"
@@ -113,8 +113,8 @@ class Conv_VAE(nn.Module):
                 self.dec_conv.add_module(name, nn.Dropout2d(p=dropout))   
         
         deconv = deconv_list[-1]
-        self.hrec_mu = nn.Conv2d(deconv[0],deconv[1],deconv[2],stride=deconv[3],padding=deconv[4],output_padding = deconv[5])
-        self.hrec_logvar = nn.Conv2d(deconv[0],deconv[1],deconv[2],stride=deconv[3],padding=deconv[4],output_padding = deconv[5])
+        self.hrec_mu = nn.ConvTranspose2d(deconv[0],deconv[1],deconv[2],stride=deconv[3],padding=deconv[4],output_padding = deconv[5])
+        self.hrec_logvar = nn.ConvTranspose2d(deconv[0],deconv[1],deconv[2],stride=deconv[3],padding=deconv[4],output_padding = deconv[5])
         
         #INIT XAVIER (weights) AND ZERO (biases)
         for name, param in self.named_parameters():

@@ -51,7 +51,7 @@ deconv2 = [8, 1, (13,9), (10,5), (0,2)]
 deconv = [deconv1, deconv2]
 
     #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
-h_dims = [2016, 512]
+h_dims = [[2016, 512]]
 z_dim = 32
 
 #Hyper parameters : non-linearity? batchnorm? dropout?
