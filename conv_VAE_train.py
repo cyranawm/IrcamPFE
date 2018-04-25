@@ -28,9 +28,9 @@ import torch.optim as optim
 from torch.autograd import Variable
 
 from outils.scaling import scale_data
-from VAE.Conv_VAE import Conv_VAE, conv_loss
-sys.path.append('./aciditools/')
+from models.VAE.Conv_VAE import Conv_VAE, conv_loss
 
+sys.path.append('./aciditools/')
 try:
     from aciditools.utils.dataloader import DataLoader
     from aciditools.drumLearning import importDataset #Should work now
@@ -155,9 +155,11 @@ for epoch in range(nb_epochs):
         fig = plt.figure()
         for idx in range(1,6):
             plt.subplot(2,5,idx)
-            plt.imshow(raw_inputs[idx].clone().cpu())
+            inputs = pre_process[idx].view(in_shape[0], in_shape[1])
+            plt.imshow(inputs.clone().cpu())
             plt.subplot(2,5,5+idx)
-            plt.imshow(rec_mu[idx].clone().cpu().data)
+            rec_mu = rec_mu[idx].view(in_shape[0], in_shape[1])
+            plt.imshow(rec_mu.clone().cpu().data)
         fig.savefig('./results/images/check_epoch'+str(epoch)+'.png' )
             
     #Print stats
