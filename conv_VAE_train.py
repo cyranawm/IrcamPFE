@@ -110,7 +110,7 @@ for epoch in range(nb_epochs):
         
         #1. get the inputs and wrap them in Variable
         raw_inputs, labels = data
-        pre_process, labels = torch.from_numpy(data).float(), torch.from_numpy(labels)
+        pre_process, labels = torch.from_numpy(raw_inputs).float(), torch.from_numpy(labels)
         pre_process = torch.abs(pre_process)
         pre_process = scale_data(pre_process, log_scaling, normalize) 
         if use_cuda:
