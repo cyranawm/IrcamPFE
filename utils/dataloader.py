@@ -30,6 +30,7 @@ class DataLoader(object):
     
     def __iter__(self):
         for i in range(len(self.random_ids)):
+            print(type(self.dataset.data), list)
             if issubclass(type(self.dataset.data), list):
                 x = [d[self.random_ids[i]] for d in self.dataset.data]
             else:
