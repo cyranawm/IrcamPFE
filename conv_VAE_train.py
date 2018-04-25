@@ -20,14 +20,16 @@ except:
     import matplotlib.pyplot as plt
 
 import numpy as np
+import sys
 
 import torch
 import torch.optim as optim
 from torch.autograd import Variable
 
 from VAE.Conv_VAE import Conv_VAE, conv_loss
-from utils.dataloader import DataLoader
-from aciditools.drumLearning import importDataset #TODO : MARCHE PAS
+sys.path.append('./aciditools/')
+from aciditools.utils.dataloader import DataLoader
+from aciditools.drumLearning import importDataset #Should work now
 
 
 
