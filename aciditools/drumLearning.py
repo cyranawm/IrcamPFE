@@ -14,7 +14,7 @@ def importDataset(base_path = '/fast-1/DrumsDataset', specific = ''):
       "dataDirectory":base_path+'/data'+specific,              
       "dataPrefix": base_path, 
       "metadataDirectory":base_path + '/metadata',                        
-      "analysisDirectory":base_path + '/analysis' + specific,# Root to place (and find) the transformed data
+      "analysisDirectory":base_path + '/analysis',# Root to place (and find) the transformed data
       "importCallback":None,                                  # Function to perform import of data
       "transformCallback":None,                               # Function to transform data (can be a list)
       "transformName":'nsgt-cqt',                            # Name of the imported transform
@@ -51,3 +51,4 @@ def importDataset(base_path = '/fast-1/DrumsDataset', specific = ''):
     
     return audioSet
 
+#caca

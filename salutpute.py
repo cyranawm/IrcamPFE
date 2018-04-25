@@ -14,8 +14,8 @@ test = torch.randn(1,1,313,410)
 test = Variable(test)
 
 
-conv1 = nn.Conv2d(1, 8, (20,10), (10,5), (2,2))
-conv2 = nn.Conv2d(8, 16, (10,5), (4,4), (0,2))
+conv1 = nn.Conv2d(1, 64, (20,10), (10,5), (2,2))
+conv2 = nn.Conv2d(64, 64, (10,5), (4,4), (0,2))
 
 deconv1 = nn.ConvTranspose2d(16, 8, (10,5), (4,4), (0,2), (1,1))
 deconv2 = nn.ConvTranspose2d(8, 1, (13,9), (10,5), (0,2))
@@ -28,6 +28,23 @@ test4 = deconv2(test3)
 
 
 print(test2.size(), test3.size(), test4.size())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #%%
 import sys
 sys.path.append('aciditools/')

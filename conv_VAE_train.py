@@ -11,6 +11,7 @@ Created on Thu Apr 19 14:30:07 2018
 
 try:
     import matplotlib
+    matplotlib.use('agg')
     from matplotlib import pyplot as plt
 except:
     import sys
@@ -28,11 +29,17 @@ from torch.autograd import Variable
 
 from VAE.Conv_VAE import Conv_VAE, conv_loss
 sys.path.append('./aciditools/')
-from aciditools.utils.dataloader import DataLoader
-from aciditools.drumLearning import importDataset #Should work now
+
+try:
+    from aciditools.utils.dataloader import DataLoader
+    from aciditools.drumLearning import importDataset #Should work now
+except:
+    sys.path.append('/Users/cyranaouameur/anaconda2/envs/py35/lib/python3.5/site-packages/nsgt')
+    from aciditools.utils.dataloader import DataLoader
+    from aciditools.drumLearning import importDataset  
 
 
-
+#%%
 #Compute transforms and load data
 task = 'instrument'
 
@@ -42,7 +49,7 @@ dataset.metadata[task] = np.array(dataset.metadata[task])
 in_shape = dataset.get(0).shape
 mb_size = 100
 dataloader = DataLoader(dataset, mb_size, task) 
-
+#%%
 #Define the parameters of:
     #The Conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
 conv1 = [1, 8, (20,10), (10,5), (2,2)]
@@ -95,6 +102,9 @@ for epoch in range(nb_epochs):
         #1. get the inputs and wrap them in Variable
         raw_inputs, labels = data
         pre_process = np.real(raw_inputs)
+        print('zero:', (pre_process==0).any())
+        print('inf:', (pre_process<0).any())
+        print('min:', np.min(pre_process))
         pre_process = np.log(pre_process)
         pre_process, labels = torch.from_numpy(pre_process).float(), torch.from_numpy(labels)
         if use_cuda:
