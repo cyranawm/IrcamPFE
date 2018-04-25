@@ -1,12 +1,12 @@
-from data.sets.generic import Dataset
-from data.sets.audio import DatasetAudio
-from data.sets.midi import DatasetMidi
-from data.sets.timeseries import DatasetTimeSeries
-from data.sets.metadata import importRawLabel
-from data.sets import utils
+from .data.sets.generic import Dataset
+from .data.sets.audio import DatasetAudio
+from .data.sets.midi import DatasetMidi
+from .data.sets.timeseries import DatasetTimeSeries
+from .data.sets.metadata import importRawLabel
+from .data.sets import utils
 # Add extraneous imports 
-from asynchronous.task import AsynchronousTask
-import gc
+from .asynchronous.task import AsynchronousTask
+#import gc
 
 
 def importDataset(base_path = '/fast-1/DrumsDataset', specific = ''):

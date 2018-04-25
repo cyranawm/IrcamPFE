@@ -32,7 +32,8 @@ from aciditools.drumLearning import importDataset #TODO : MARCHE PAS
 
 
 #Compute transforms and load data
-dataset = importDataset(base_path, specific)
+dataset = importDataset()
+dataset.data = np.array(dataset.data)
 in_shape = dataset.get(0).shape
 mb_size = 100
 dataloader = DataLoader(dataset, mb_size, task = 'instrument') 
@@ -83,18 +84,19 @@ for epoch in range(nb_epochs):
     epoch_recon = 0.0
     epoch_KL = 0.0
     
-    for i, data in enumerate(dataloader) : #TODO : enumerate chie dans la colle
+    for i, data in enumerate(dataloader) : #TODO : enumerate chie dans la colle OK
         optimizer.zero_grad()
         
         #1. get the inputs and wrap them in Variable
         raw_inputs, labels = data
         pre_process = np.real(raw_inputs)
         pre_process = np.log(pre_process)
-        pre_process = torch.from_numpy(pre_process) 
+        pre_process = torch.from_numpy(pre_process)
+        if use_cuda:
+            pre_process = pre_process.cuda()
         pre_process = pre_process.view(mb_size,1,in_shape[0], in_shape[1]) #TODO : verif
         x, labels = Variable(pre_process), Variable(labels)
-        if use_cuda:
-            x = x.cuda()
+        
         
         #2. Forward data
         rec_mu, rec_logvar, z_mu, z_logvar = vae.forward(x)
