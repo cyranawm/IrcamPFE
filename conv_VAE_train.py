@@ -34,11 +34,14 @@ from aciditools.drumLearning import importDataset #Should work now
 
 
 #Compute transforms and load data
+task = 'instrument'
+
 dataset = importDataset()
 dataset.data = np.array(dataset.data)
+dataset.metadata[task] = np.array(dataset.metadata[task])
 in_shape = dataset.get(0).shape
 mb_size = 100
-dataloader = DataLoader(dataset, mb_size, task = 'instrument') 
+dataloader = DataLoader(dataset, mb_size, task) 
 
 #Define the parameters of:
     #The Conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
@@ -47,7 +50,7 @@ conv2 = [8, 16, (10,5), (4,4), (0,2)]
 conv = [conv1, conv2]
     #The Deconv Layers: [in_channels, out_channels, kernel_size, stride, padding, output_padding]
 deconv1 = [16, 8, (10,5), (4,4), (0,2), (1,1)]
-deconv2 = [8, 1, (13,9), (10,5), (0,2)]
+deconv2 = [8, 1, (13,9), (10,5), (0,2), (0,0)]
 deconv = [deconv1, deconv2]
 
     #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
