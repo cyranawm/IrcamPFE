@@ -112,7 +112,7 @@ for epoch in range(nb_epochs):
         raw_inputs, labels = data
         pre_process, labels = torch.from_numpy(raw_inputs).float(), torch.from_numpy(labels)
         pre_process = torch.abs(pre_process)
-        pre_process = scale_data(pre_process, log_scaling, normalize) 
+        pre_process, norm_const = scale_data(pre_process, log_scaling, normalize) 
         if use_cuda:
             pre_process = pre_process.cuda()
         pre_process = pre_process.view(mb_size,1,in_shape[0], in_shape[1])
