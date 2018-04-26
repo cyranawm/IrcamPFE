@@ -158,8 +158,8 @@ for epoch in range(nb_epochs):
             inputs = pre_process[idx].view(in_shape[0], in_shape[1])
             plt.imshow(inputs.clone().cpu())
             plt.subplot(2,5,5+idx)
-            rec_mu = rec_mu[idx].view(in_shape[0], in_shape[1])
-            plt.imshow(rec_mu.clone().cpu().data)
+            output = rec_mu[idx].view(in_shape[0], in_shape[1])
+            plt.imshow(output.clone().cpu().data)
         fig.savefig('./results/images/check_epoch'+str(epoch)+'.png' )
             
     #Print stats
