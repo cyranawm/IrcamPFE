@@ -45,7 +45,7 @@ except:
 task = 'instrument'
 
 dataset = importDataset()
-dataset.data = np.array(dataset.data)
+dataset.data = np.real(np.array(dataset.data))
 dataset.metadata[task] = np.array(dataset.metadata[task])
 in_shape = dataset.get(0).shape
 mb_size = 100
