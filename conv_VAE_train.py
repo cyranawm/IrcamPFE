@@ -5,10 +5,6 @@ Created on Thu Apr 19 14:30:07 2018
 
 @author: cyranaouameur
 """
-
-#import libs
-#from datasets.MNIST import load_MNIST, test_MNIST
-
 try:
     import matplotlib
     matplotlib.use('agg')
@@ -20,15 +16,18 @@ except:
     matplotlib.use('agg')
     import matplotlib.pyplot as plt
 
+import argparse
 import numpy as np
 import sys
+from skimage.transform import resize
+
 
 import torch
 import torch.optim as optim
 from torch.autograd import Variable
 
-from outils.scaling import scale_data
-from models.VAE.Conv_VAE import Conv_VAE, conv_loss
+from outils.scaling import scale_array
+from models.VAE.Conv_VAE import Conv_VAE, conv_loss, layers_config
 
 sys.path.append('./aciditools/')
 try:
@@ -39,46 +38,105 @@ except:
     from aciditools.utils.dataloader import DataLoader
     from aciditools.drumLearning import importDataset  
 
+#%%Parse arguments
 
-#%%
-#Compute transforms and load data
-task = 'instrument'
+parser = argparse.ArgumentParser(description='Conv_VAE training and saving')
+
+# VAE dimensions
+parser.add_argument('--config', nargs='1', type=int, metavar='int',
+                    help='<Required> Choice of the net configuration')
+
+parser.add_argument('-z', '--z_dim', nargs='1', type=int, metavar='int',
+                    help='<Required> Dimension of the latent space')
+
+#data settings
+parser.add_argument('--task', type=str, default='full', metavar='class', choices=['kicks', 'full'],
+                    help='Define the class of instruments to train the model on (kicks or full)')
+parser.add_argument('--downsample', type=int, default=1, metavar='N',
+                    help='Define the downsampling factor (default: 1 -> no downsample)')
+
+# training settings
+parser.add_argument('--mb_size', type=int, default=100, metavar='N',
+                    help='input batch size for training (default: 100)')
+parser.add_argument('--epochs', type=int, default=5000, metavar='N',
+                    help='number of epochs to train (default: 5000)')
+parser.add_argument('--beta', type=int, default=1, metavar='N',
+                    help='beta coefficient for regularization (default: 1)')
+parser.add_argument('--Nwu', type=int, default=1, metavar='N',
+                    help='epochs number for warm-up (default: 1 -> no warm-up)')
+
+parser.add_argument('--gpu', type=int, default=1, metavar='N',
+                    help='The ID of the GPU to use')
+
+
+args = parser.parse_args()
+
+#%% CUDA
+
+use_cuda = torch.cuda.is_available()
+if use_cuda:
+    torch.cuda.set_device(args.GPU)
+    torch.backends.cudnn.benchmark = True
+    
+#%% Compute transforms and load data
+log_scaling = True
+normalize = 'gaussian'
+
+task = args.task
+
 
 dataset = importDataset()
-dataset.data = np.real(np.array(dataset.data))
-dataset.metadata[task] = np.array(dataset.metadata[task])
-in_shape = dataset.get(0).shape
-mb_size = 100
-dataloader = DataLoader(dataset, mb_size, task) 
+
+dataset.metadata['instrument'] = np.array(dataset.metadata['instrument']) #to array
+dataset.data = np.abs(dataset.data) # to real positive array
+
+if task == 'kicks':
+    dataset.data = dataset.data[dataset.metadata['instruments']==0]    
+    dataset.metadata['instrument'] = dataset.metadata['instrument'][dataset.metadata['instruments']==0]    
 
 
-#%%
-#Define the parameters of:
-    #The Conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
-conv1 = [1, 8, (20,10), (10,5), (2,2)]
-conv2 = [8, 16, (10,5), (4,4), (0,2)]
-conv = [conv1, conv2]
-    #The Deconv Layers: [in_channels, out_channels, kernel_size, stride, padding, output_padding]
-deconv1 = [16, 8, (10,5), (4,4), (0,2), (1,1)]
-deconv2 = [8, 1, (13,9), (10,5), (0,2), (0,0)]
-deconv = [deconv1, deconv2]
 
-    #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
-h_dims = [[2016, 512]]
-z_dim = 32
+#downsample by a given factor
+nbFrames, nbBins = dataset.get(0).shape
+downFactor = args.downsample
+downsampled = []
+for img in dataset.data:
+    downsampled.append(resize(img, (nbBins, int(nbFrames / downFactor)), mode='constant'))
+in_shape = (nbBins, int(nbFrames / downFactor))
+
+#Scale data
+dataset.data, norm_const = scale_array(downsampled, log_scaling, normalize) 
+
+#Constrcut partitions (train and validation sets)
+dataset.constructPartitions('instrument', ['train','valid'], [0.8, 0.2])
+
+#Compute the best mb_size for valid_set
+len_val = len(dataset.partitions['valid'])
+valid_mb = [x for x in range(len_val+1) if x != 0 and len_val%x == 0 and x<150][-1]
+
+mb_size = args.mb_size
+
+#Create the Loaders
+trainloader = DataLoader(dataset, mb_size, 'instrument', partition = 'train') 
+testloader = DataLoader(dataset, valid_mb, 'instrument', partition = 'valid')
+
+#TODO : to torch tensor?
+
+
+#%% Define the parameters of the model (configs are in models/VAE/Conv_VAE.py) :
+conv, h_dims, deconv = layers_config(args.config)
+z_dim = args.z_dim
 
 
 
 #Hyper parameters : non-linearity? batchnorm? dropout?
 nnLin = ['relu','none'] #[h_act, out_act] with 'relu' or 'tanh' or 'elu' or 'none'
-use_cuda = torch.cuda.is_available()
 use_bn = True
-dropout = 0.2 # False or a prob between 0 and 1
-final_beta = 1
-wu_time = 100
+dropout = False # False or a prob between 0 and 1
+final_beta = args.beta
+wu_time = args.Nwu
 use_tensorboard = True #True, False or 'Full' (histograms)
-log_scaling = True
-normalize = 'gaussian'
+
 
 
 
@@ -89,11 +147,14 @@ if use_cuda :
 if use_tensorboard:
     from tensorboardX import SummaryWriter
     vae.writer = SummaryWriter()
+    
+    
 #%%Training routine
 
-nb_epochs = 1000
+nb_epochs = args.epochs
 vae.train()
 optimizer = optim.Adam(vae.parameters(), lr=0.0001)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=100)
 
 for epoch in range(nb_epochs):
 
@@ -105,17 +166,15 @@ for epoch in range(nb_epochs):
     epoch_recon = 0.0
     epoch_KL = 0.0
     
-    for i, data in enumerate(dataloader) : 
+    for i, data in enumerate(trainloader) : 
         optimizer.zero_grad()
         
         #1. get the inputs and wrap them in Variable
         raw_inputs, labels = data
         pre_process, labels = torch.from_numpy(raw_inputs).float(), torch.from_numpy(labels)
-        pre_process = torch.abs(pre_process)
-        pre_process, norm_const = scale_data(pre_process, log_scaling, normalize) 
         if use_cuda:
             pre_process = pre_process.cuda()
-        pre_process = pre_process.view(mb_size,1,in_shape[0], in_shape[1])
+        pre_process = pre_process.unsqueeze(1)
         x, labels = Variable(pre_process), Variable(labels)
         
         
@@ -134,14 +193,18 @@ for epoch in range(nb_epochs):
         loss.backward()
         optimizer.step()
 
-#4. TODO at the end of the epoch :
+#4. EPOCH FINISHED :
     
     epoch_size = i+1
     
-    #Tensorboard log
+#Compute validation loss and scheduler.step()
+    valid_loss, valid_in, valid_out = vae.valid_loss(testloader, beta, use_cuda, last_batch = True)
+    scheduler.step(valid_loss)
+    
+#Tensorboard log
     if use_tensorboard:
-        
         vae.writer.add_scalars('avglosses', {'loss': epoch_loss/epoch_size,
+                                             'valid_loss': valid_loss,
                                            'Recon_loss': epoch_recon/epoch_size,
                                            'KL_loss': epoch_KL/epoch_size},
                                             epoch+1)
@@ -149,9 +212,9 @@ for epoch in range(nb_epochs):
             for name, param in vae.named_parameters():
                 vae.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch+1)
   
-        
-    #Saving images
-    if np.mod(epoch,50) == 0:       
+#Saving images
+    if np.mod(epoch,50) == 0: 
+        #from training set
         fig = plt.figure()
         for idx in range(1,6):
             plt.subplot(2,5,idx)
@@ -159,19 +222,34 @@ for epoch in range(nb_epochs):
             plt.imshow(inputs.clone().cpu())
             plt.subplot(2,5,5+idx)
             output = rec_mu[idx].view(in_shape[0], in_shape[1])
-            plt.imshow(output.clone().cpu().data)
-        fig.savefig('./results/images/check_epoch'+str(epoch)+'.png' )
+            plt.imshow(output.clone().cpu().data) #still a variable
+        fig.savefig('./results/images/train_epoch'+str(epoch)+'.png' )
+        
+        #from validset
+        fig = plt.figure()
+        for idx in range(1,6):
+            plt.subplot(2,5,idx)
+            inputs = valid_in[idx].view(in_shape[0], in_shape[1])
+            plt.imshow(inputs.clone().cpu())
+            plt.subplot(2,5,5+idx)
+            output = valid_out[idx].view(in_shape[0], in_shape[1])
+            plt.imshow(output.clone().cpu().data) #still a variable
+        fig.savefig('./results/images/valid_epoch'+str(epoch)+'.png' )
+        
+#saving model ?
+    #
             
-    #Print stats
-    print('[End of epoch %d] \n beta : %.3f \n loss: %.3f \n recon_loss: %.3f \n KLloss: %.3f \n -----------------' %
+#Print stats
+    print('[End of epoch %d] \n recon_loss: %.3f \n KLloss: %.3f \n beta : %.3f \n loss: %.3f \n valid_loss: %.3f \n -----------------' %
               (epoch + 1,
+               epoch_recon/epoch_size, 
+               epoch_KL/epoch_size,
                beta,
                epoch_loss/epoch_size, 
-               epoch_recon/epoch_size, 
-               epoch_KL/epoch_size ))
+               valid_loss))
 
-#5.ToDo when everything is finished
+#5. TRAINING FINISHED
     
-name = 'tamere'
+name = 'conv_config'+str(args.config)
 vae.save(name, use_cuda)
 print("MERCI DE VOTRE PATIENCE MAITRE. \n J'AI FINI L'ENTRAINEMENT ET JE NE SUIS QU'UNE VULGAIRE MACHINE ENTIEREMENT SOUMISE.")

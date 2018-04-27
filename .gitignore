@@ -11,6 +11,8 @@ datasets/DrumsDataset/*
 
 trash/*
 
+tests/*
+
 aciditools/*
 !aciditools/drumLearning.py
 

@@ -28,8 +28,75 @@ def conv_loss(target, rec_mu, rec_logvar, z_mu, z_logvar):
     return recon_loss, KL_loss
 
 
+
+def layers_config(n):
+    if n == 1:
+        #The conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
+        conv1 = [1, 8, (20,10), (10,5), (2,2)]
+        conv2 = [8, 16, (10,5), (4,4), (0,2)]
+        conv = [conv1, conv2]
+        
+        #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
+        h_dims = [[672, 512]]
+        
+        #The Deconv Layers: [in_channels, out_channels, kernel_size, stride, padding, output_padding]
+        deconv1 = [16, 8, (10,5), (4,4), (0,2), (1,1)]
+        deconv2 = [8, 1, (13,9), (10,5), (0,2), (0,0)]
+        deconv = [deconv1, deconv2]
+        
+    elif n == 2:
+        #The conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
+        conv1 = [1, 8, (20,10), (10,5), (2,2)]
+        conv2 = [8, 16, (10,5), (4,4), (0,2)]
+        conv = [conv1, conv2]
+        
+        #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
+        h_dims = [[2016, 512]]
+        
+        #The Deconv Layers: [in_channels, out_channels, kernel_size, stride, padding, output_padding]
+        deconv1 = [16, 8, (10,5), (4,4), (0,2), (1,1)]
+        deconv2 = [8, 1, (13,9), (10,5), (0,2), (0,0)]
+        deconv = [deconv1, deconv2]
+        
+    elif n == 3:
+        #The conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
+        conv1 = [1, 8, (20,10), (10,5), (2,2)]
+        conv2 = [8, 16, (10,5), (4,4), (0,2)]
+        conv = [conv1, conv2]
+        
+        #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
+        h_dims = [[2016, 512]]
+        
+        #The Deconv Layers: [in_channels, out_channels, kernel_size, stride, padding, output_padding]
+        deconv1 = [16, 8, (10,5), (4,4), (0,2), (1,1)]
+        deconv2 = [8, 1, (13,9), (10,5), (0,2), (0,0)]
+        deconv = [deconv1, deconv2]
+        
+    elif n == 4:
+        #The conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
+        conv1 = [1, 8, (20,10), (10,5), (2,2)]
+        conv2 = [8, 16, (10,5), (4,4), (0,2)]
+        conv = [conv1, conv2]
+        
+        #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
+        h_dims = [[2016, 512]]
+        
+        #The Deconv Layers: [in_channels, out_channels, kernel_size, stride, padding, output_padding]
+        deconv1 = [16, 8, (10,5), (4,4), (0,2), (1,1)]
+        deconv2 = [8, 1, (13,9), (10,5), (0,2), (0,0)]
+        deconv = [deconv1, deconv2]
+        
+    return conv, h_dims, deconv
+
+
     
 
+
+#####################################
+###  DEFINITION OF THE VAE MODEL  ###
+#####################################
+
+        
 class Conv_VAE(nn.Module):
     def __init__(self, conv_list, h_dims, z_dim, deconv_list, nnLin, use_bn, dropout ):
         super(Conv_VAE, self).__init__()
@@ -161,5 +228,38 @@ class Conv_VAE(nn.Module):
             copy.cpu()
         savepath = 'results/'+name
         torch.save(copy.state_dict(), savepath)
+        
+    def valid_loss(self, validset, beta, use_cuda, last_batch = False):
+        
+        valid_loss = 0.0
+        
+        for i, data in enumerate(validset):
+            #1. get the inputs and wrap them in Variable
+            inputs, labels = data
+            inputs, labels = torch.from_numpy(inputs).float(), torch.from_numpy(labels)
+            if use_cuda:
+                inputs = inputs.cuda()
+            inputs = inputs.unsqueeze(1)
+            x, labels = Variable(inputs), Variable(labels)
+            
+            #2. Forward data
+            rec_mu, rec_logvar, z_mu, z_logvar = self.forward(x)
+    
+            #3. Compute losses (+validation loss)
+            recon_loss, kl_loss = conv_loss(x, rec_mu, rec_logvar, z_mu, z_logvar)
+            loss = recon_loss + beta*kl_loss
+            
+            valid_loss += loss.data[0]
+            
+        valid_loss /= i+1
+        
+        if last_batch:
+            last_batch_in = inputs
+            last_batch_out = rec_mu
+            return valid_loss, last_batch_in, last_batch_out
+        
+        else :
+            return valid_loss
+            
         
 #    def load(self, name, directory):
