@@ -5,39 +5,7 @@ Created on Thu Apr 19 14:30:07 2018
 
 @author: cyranaouameur
 """
-try:
-    import matplotlib
-    matplotlib.use('agg')
-    from matplotlib import pyplot as plt
-except:
-    import sys
-    sys.path.append("/usr/local/lib/python3.6/site-packages/")
-    import matplotlib
-    matplotlib.use('agg')
-    import matplotlib.pyplot as plt
-
 import argparse
-import numpy as np
-import sys
-from skimage.transform import resize
-
-
-import torch
-import torch.optim as optim
-from torch.autograd import Variable
-
-from outils.scaling import scale_array
-from models.VAE.Conv_VAE import Conv_VAE, conv_loss, layers_config
-
-sys.path.append('./aciditools/')
-try:
-    from aciditools.utils.dataloader import DataLoader
-    from aciditools.drumLearning import importDataset #Should work now
-except:
-    sys.path.append('/Users/cyranaouameur/anaconda2/envs/py35/lib/python3.5/site-packages/nsgt')
-    from aciditools.utils.dataloader import DataLoader
-    from aciditools.drumLearning import importDataset  
-
 #%%Parse arguments
 
 parser = argparse.ArgumentParser(description='Conv_VAE training and saving')
@@ -62,8 +30,8 @@ parser.add_argument('--epochs', type=int, default=5000, metavar='N',
                     help='number of epochs to train (default: 5000)')
 parser.add_argument('--beta', type=int, default=1, metavar='N',
                     help='beta coefficient for regularization (default: 1)')
-parser.add_argument('--Nwu', type=int, default=1, metavar='N',
-                    help='epochs number for warm-up (default: 1 -> no warm-up)')
+parser.add_argument('--Nwu', type=int, default=100, metavar='N',
+                    help='epochs number for warm-up (default: 100')
 
 parser.add_argument('--gpu', type=int, default=1, metavar='N',
                     help='The ID of the GPU to use')
@@ -71,12 +39,47 @@ parser.add_argument('--gpu', type=int, default=1, metavar='N',
 
 args = parser.parse_args()
 
+#%%Imports
+try:
+    import matplotlib
+    matplotlib.use('agg')
+    from matplotlib import pyplot as plt
+except:
+    import sys
+    sys.path.append("/usr/local/lib/python3.6/site-packages/")
+    import matplotlib
+    matplotlib.use('agg')
+    import matplotlib.pyplot as plt
+
+import numpy as np
+import sys
+from skimage.transform import resize
+
+
+import torch
+import torch.optim as optim
+from torch.autograd import Variable
+
+from outils.scaling import scale_array
+from models.VAE.Conv_VAE import Conv_VAE, conv_loss, layers_config
+
+sys.path.append('./aciditools/')
+try:
+    from aciditools.utils.dataloader import DataLoader
+    from aciditools.drumLearning import importDataset #Should work now
+except:
+    sys.path.append('/Users/cyranaouameur/anaconda2/envs/py35/lib/python3.5/site-packages/nsgt')
+    from aciditools.utils.dataloader import DataLoader
+    from aciditools.drumLearning import importDataset  
+
+
 #%% CUDA
 
 use_cuda = torch.cuda.is_available()
 if use_cuda:
     torch.cuda.set_device(args.GPU)
     torch.backends.cudnn.benchmark = True
+    print('USING CUDA ON GPU' + torch.cuda.current_device())
     
 #%% Compute transforms and load data
 log_scaling = True
@@ -91,6 +94,7 @@ dataset.metadata['instrument'] = np.array(dataset.metadata['instrument']) #to ar
 dataset.data = np.abs(dataset.data) # to real positive array
 
 if task == 'kicks':
+    print('TRAINING ONLY ON KICKS')
     dataset.data = dataset.data[dataset.metadata['instruments']==0]    
     dataset.metadata['instrument'] = dataset.metadata['instrument'][dataset.metadata['instruments']==0]    
 
@@ -236,8 +240,10 @@ for epoch in range(nb_epochs):
             plt.imshow(output.clone().cpu().data) #still a variable
         fig.savefig('./results/images/valid_epoch'+str(epoch)+'.png' )
         
-#saving model ?
-    #
+#saving model 
+    if np.mod(epoch,200) == 0: 
+        name = 'conv_config'+str(args.config) + '_ep' + str(epoch)
+        vae.save(name, use_cuda)
             
 #Print stats
     print('[End of epoch %d] \n recon_loss: %.3f \n KLloss: %.3f \n beta : %.3f \n loss: %.3f \n valid_loss: %.3f \n -----------------' %
@@ -250,6 +256,6 @@ for epoch in range(nb_epochs):
 
 #5. TRAINING FINISHED
     
-name = 'conv_config'+str(args.config)
+name = 'conv_config'+str(args.config) + '_final'
 vae.save(name, use_cuda)
 print("MERCI DE VOTRE PATIENCE MAITRE. \n J'AI FINI L'ENTRAINEMENT ET JE NE SUIS QU'UNE VULGAIRE MACHINE ENTIEREMENT SOUMISE.")
