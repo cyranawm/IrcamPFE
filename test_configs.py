@@ -14,7 +14,7 @@ import numpy as np
 
 
 #SET THE CONFIGURATION TO TEST
-config = 1
+config = 2
 
 
 
@@ -30,14 +30,14 @@ dropout = False # False or a prob between 0 and 1
 #initialize the model and use cuda if available
 vae = Conv_VAE(conv, h_dims, z_dim, deconv, nnLin, use_bn, dropout)
 #%%
-data = np.zeros((10,313,410))
+data = np.ones((10,313,410))
 nbFrames, nbBins = 313, 410
 downFactor = 2
 down_data = []
 for img in data:
     down_data.append(resize(img, (int(nbFrames / downFactor), nbBins), mode='constant'))
 
-ten = torch.from_numpy(data)
+ten = torch.from_numpy(np.array(down_data))
 ten = ten/torch.max(torch.abs(ten))
 ten = ten.unsqueeze(1).float()
 
@@ -46,4 +46,6 @@ ten = Variable(ten)
 
 #%%
 
-vae.forward(ten)
+res = vae.forward(ten)[0]
+print(ten.size())
+print(res.size())
