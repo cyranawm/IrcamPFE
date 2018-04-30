@@ -106,8 +106,8 @@ nbFrames, nbBins = dataset.get(0).shape
 downFactor = args.downsample
 downsampled = []
 for img in dataset.data:
-    downsampled.append(resize(img, (nbBins, int(nbFrames / downFactor)), mode='constant'))
-in_shape = (nbBins, int(nbFrames / downFactor))
+    downsampled.append(resize(img, (int(nbFrames / downFactor), nbBins), mode='constant'))
+in_shape = (int(nbFrames / downFactor), nbBins)
 
 #Scale data
 dataset.data, norm_const = scale_array(downsampled, log_scaling, normalize) 
