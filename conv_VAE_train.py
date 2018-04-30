@@ -96,8 +96,8 @@ dataset.data = np.abs(dataset.data) # to real positive array
 
 if task == 'kicks':
     print('TRAINING ONLY ON KICKS')
-    dataset.data = dataset.data[dataset.metadata['instruments']==0]    
-    dataset.metadata['instrument'] = dataset.metadata['instrument'][dataset.metadata['instruments']==0]    
+    dataset.data = dataset.data[dataset.metadata['instrument']==0]    
+    dataset.metadata['instrument'] = dataset.metadata['instrument'][dataset.metadata['instrument']==0]    
 
 
 
