@@ -10,11 +10,12 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Conv_VAE training and saving')
 
+
 # VAE dimensions
-parser.add_argument('--config', nargs='1', type=int, metavar='int',
+parser.add_argument('config', type=int,
                     help='<Required> Choice of the net configuration')
 
-parser.add_argument('-z', '--z_dim', nargs='1', type=int, metavar='int',
+parser.add_argument('z_dim', type=int,
                     help='<Required> Dimension of the latent space')
 
 #data settings
@@ -31,7 +32,7 @@ parser.add_argument('--epochs', type=int, default=5000, metavar='N',
 parser.add_argument('--beta', type=int, default=1, metavar='N',
                     help='beta coefficient for regularization (default: 1)')
 parser.add_argument('--Nwu', type=int, default=100, metavar='N',
-                    help='epochs number for warm-up (default: 100')
+                    help='epochs number for warm-up (default: 100)')
 
 parser.add_argument('--gpu', type=int, default=1, metavar='N',
                     help='The ID of the GPU to use')
