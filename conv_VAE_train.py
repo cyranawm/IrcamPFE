@@ -78,9 +78,9 @@ except:
 
 use_cuda = torch.cuda.is_available()
 if use_cuda:
-    torch.cuda.set_device(args.GPU)
+    torch.cuda.set_device(args.gpu)
     torch.backends.cudnn.benchmark = True
-    print('USING CUDA ON GPU' + torch.cuda.current_device())
+    print('USING CUDA ON GPU' + str(torch.cuda.current_device()))
     
 #%% Compute transforms and load data
 log_scaling = True
@@ -113,7 +113,7 @@ in_shape = (nbBins, int(nbFrames / downFactor))
 dataset.data, norm_const = scale_array(downsampled, log_scaling, normalize) 
 
 #Constrcut partitions (train and validation sets)
-dataset.constructPartitions('instrument', ['train','valid'], [0.8, 0.2])
+dataset.constructPartition('instrument', ['train','valid'], [0.8, 0.2])
 
 #Compute the best mb_size for valid_set
 len_val = len(dataset.partitions['valid'])
