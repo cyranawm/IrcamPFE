@@ -227,7 +227,8 @@ class Conv_VAE(nn.Module):
     def save(self, name, use_cuda):
         copy = deepcopy(self.state_dict())
         if use_cuda:
-            copy.cpu()
+            for i, k in copy.items():
+                copy[i] = k.cpu()
         savepath = 'results/'+name
         torch.save(copy, savepath)
         
