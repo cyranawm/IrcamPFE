@@ -225,11 +225,11 @@ class Conv_VAE(nn.Module):
         return rec_mu, rec_logvar, z_mu, z_logvar
     
     def save(self, name, use_cuda):
-        copy = deepcopy(self)
+        copy = deepcopy(self.state_dict())
         if use_cuda:
             copy.cpu()
         savepath = 'results/'+name
-        torch.save(copy.state_dict(), savepath)
+        torch.save(copy, savepath)
         
     def valid_loss(self, validset, beta, use_cuda, last_batch = False):
         
