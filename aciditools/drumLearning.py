@@ -9,9 +9,9 @@ from .asynchronous.task import AsynchronousTask
 #import gc
 
 
-def importDataset(base_path = '/fast-1/DrumsDataset', specific = ''):
+def importDataset(base_path = '/fast-1/DrumsDataset', targetDur = None):
     audioOptions = {
-      "dataDirectory":base_path+'/data'+specific,              
+      "dataDirectory":base_path+'/data',              
       "dataPrefix": base_path, 
       "metadataDirectory":base_path + '/metadata',                        
       "analysisDirectory":base_path + '/analysis',# Root to place (and find) the transformed data
@@ -40,7 +40,8 @@ def importDataset(base_path = '/fast-1/DrumsDataset', specific = ''):
     transformOptions['forceRecompute'] = False
     
     transformParameters = [transformParameters]
-    transformParameters[0]['targetDuration'] = 1
+    if targetDur is not None:
+        transformParameters[0]['targetDuration'] = targetDur
     
     transformOptions['transformParameters'] = transformParameters
     audioSet.computeTransforms(None, transformOptions, padding=False)

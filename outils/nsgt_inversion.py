@@ -14,7 +14,7 @@ from skimage.transform import resize
 def pre_process_output():
     print('Mata ne')
     
-def regenerateAudio(data, minFreq = 30, maxFreq = 11000, nsgtBins = 48, sr = 22050, scale = 'oct', targetLen = int(3 * 22050), iterations = 100, momentum=False, testSize=False, curName=None):
+def regenerateAudio(data, minFreq = 30, maxFreq = 11000, nsgtBins = 48, sr = 22050, scale = 'oct', targetLen = 3*22050, iterations = 100, momentum=False, testSize=False, curName=None, crop = None):
     # Create a scale
     if (scale == 'oct'):
         scl = OctScale(minFreq, maxFreq, nsgtBins)
@@ -26,7 +26,7 @@ def regenerateAudio(data, minFreq = 30, maxFreq = 11000, nsgtBins = 48, sr = 220
     nsgt = NSGT(scl, sr, targetLen, real=True, matrixform=True, reducedform=1)
     # Run a forward test 
     if (testSize):
-        testForward = np.array(list(nsgt.forward(np.zeros((targetLen)))))
+        testForward = np.array(list(nsgt.forward(np.zeros(targetLen))))
         print(testForward.shape)
         targetFrames = testForward.shape[1]
         nbFreqs = testForward.shape[0]
@@ -48,6 +48,8 @@ def regenerateAudio(data, minFreq = 30, maxFreq = 11000, nsgtBins = 48, sr = 220
             p = new_p
     # Save the output
     if (curName is not None):
+        if (crop is not None):
+            inv_p = inv_p[:int(crop*sr)]
         librosa.output.write_wav(curName + '.wav', inv_p, sr, norm = True)
         
 if __name__ == '__main__':
@@ -68,7 +70,7 @@ if __name__ == '__main__':
     # Compute and turn into Numpy array
     finalDistribNSGT = np.array(list(nsgt.forward(sig)))
     # Checkout the number of frames 
-    nbFreq, nbFrames = regenerateAudio(np.zeros((1, 1)), testSize = True, targetLen = int(tOut * sr))
+    nbFreq, nbFrames = regenerateAudio(np.zeros((1, 1)), testSize = True, targetDur = tOut)
     # ! WARNING ! NSGT AND INVERSION WORK ON FREQ x TIME
     # BUT TOOLBOX AND LEARNING ARE ON TIME x FREQ
     print(nbFreq)
@@ -85,4 +87,4 @@ if __name__ == '__main__':
     # RE-UPSAMPLE the distribution
     downsampNSGT = resize(downsampNSGT, (nbFreq, nbFrames), mode='constant')
     # Now invert (with upsampled version)
-    regenerateAudio(downsampNSGT, targetLen = int(tOut * sr), iterations=100, curName='poulpe.wav')
+    regenerateAudio(downsampNSGT, targetDur = tOut , iterations=100, curName='poulpe.wav')

@@ -5,9 +5,7 @@
 
 runs/*
 
-datasets/Toy1/*
-
-datasets/DrumsDataset/*
+datasets/*
 
 trash/*
 
