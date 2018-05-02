@@ -37,7 +37,7 @@ def layers_config(n):
         conv = [conv1, conv2]
         
         #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
-        h_dims = [[1344, 512]]
+        h_dims = [[672, 256]]
         
         #The Deconv Layers: [in_channels, out_channels, kernel_size, stride, padding, output_padding]
         deconv1 = [32, 16, (10,5), (4,4), (0,2), (1,1)]

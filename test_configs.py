@@ -30,8 +30,8 @@ dropout = False # False or a prob between 0 and 1
 #initialize the model and use cuda if available
 vae = Conv_VAE(conv, h_dims, z_dim, deconv, nnLin, use_bn, dropout)
 #%%
-data = np.ones((10,313,410))
-nbFrames, nbBins = 313, 410
+data = np.ones((10,233,410))
+nbFrames, nbBins = 233, 410
 downFactor = 2
 down_data = []
 for img in data:

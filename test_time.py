@@ -39,3 +39,6 @@ for l in lengths:
     end = time.time()
     elapsed = end - start
     times.append(elapsed)
+    
+    
+#target time = 0.74304
