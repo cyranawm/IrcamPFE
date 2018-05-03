@@ -50,6 +50,9 @@ parser = argparse.ArgumentParser(description='model to evaluate')
 parser.add_argument('model', type=str,
                     help='<Required> Choice of the model to evaluate')
 
+parser.add_argument('--gpu', type=int, default=1, metavar='N',
+                    help='The ID of the GPU to use')
+
 args = parser.parse_args()
     
 #%% Compute transforms and load data
@@ -57,6 +60,7 @@ log_scaling = True
 normalize = 'gaussian'
 
 if torch.cuda.is_available():
+    torch.cuda.set_device(args.gpu)
     path = '/fast-1/DrumsDataset'
 else:
     path = '/Users/cyranaouameur/Desktop/StageIrcam/Code/CodeCyran/datasets/DummyDrumsCropped'
