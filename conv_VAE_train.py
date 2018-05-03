@@ -230,7 +230,7 @@ for epoch in range(nb_epochs):
             plt.subplot(2,5,5+idx)
             output = rec_mu[idx].view(in_shape[0], in_shape[1])
             plt.imshow(output.clone().cpu().data) #still a variable
-        fig.savefig('./results/images/train_epoch'+str(epoch)+'.png' )
+        fig.savefig('./results/images/reconstructions/train_epoch'+str(epoch)+'.png' )
         
         #from validset
         fig = plt.figure()
@@ -241,11 +241,11 @@ for epoch in range(nb_epochs):
             plt.subplot(2,5,5+idx)
             output = valid_out[idx].view(in_shape[0], in_shape[1])
             plt.imshow(output.clone().cpu().data) #still a variable
-        fig.savefig('./results/images/valid_epoch'+str(epoch)+'.png' )
+        fig.savefig('./results/images/reconstructions/valid_epoch'+str(epoch)+'.png' )
         
 #saving model 
     if np.mod(epoch,200) == 0: 
-        name = 'conv_config'+str(args.config) + '_ep' + str(epoch)
+        name = 'results/checkpoints/conv_config'+str(args.config) + '_ep' + str(epoch)
         vae.save(name, use_cuda)
             
 #Print stats
