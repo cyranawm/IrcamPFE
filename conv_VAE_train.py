@@ -213,7 +213,7 @@ for epoch in range(nb_epochs):
                                            'Reconstruction': epoch_recon/epoch_size,
                                            'KL Loss': epoch_KL/epoch_size},
                                             epoch+1)
-        vae.writer.add_scalars('data/LearningRate', optimizer.param_groups[0]['lr'], epoch+1)
+        vae.writer.add_scalar('data/LearningRate', optimizer.param_groups[0]['lr'], epoch+1)
         
         if use_tensorboard == 'Full':
             for name, param in vae.named_parameters():
