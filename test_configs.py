@@ -14,7 +14,7 @@ import numpy as np
 
 
 #SET THE CONFIGURATION TO TEST
-config = 1
+config = 2
 
 
 

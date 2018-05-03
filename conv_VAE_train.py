@@ -146,7 +146,7 @@ use_tensorboard = True #True, False or 'Full' (histograms)
 
 
 #initialize the model and use cuda if available
-vae = Conv_VAE(conv, h_dims, z_dim, deconv, nnLin, use_bn, dropout)
+vae = Conv_VAE(conv, h_dims, z_dim, deconv, nnLin, use_bn, dropout, use_cuda)
 if use_cuda :
     vae.cuda()
 if use_tensorboard:
@@ -208,11 +208,13 @@ for epoch in range(nb_epochs):
     
 #Tensorboard log
     if use_tensorboard:
-        vae.writer.add_scalars('avglosses', {'loss': epoch_loss/epoch_size,
-                                             'valid_loss': valid_loss,
-                                           'Recon_loss': epoch_recon/epoch_size,
-                                           'KL_loss': epoch_KL/epoch_size},
+        vae.writer.add_scalars('data/AvgLosses', {'Loss': epoch_loss/epoch_size,
+                                             'Validation': valid_loss,
+                                           'Reconstruction': epoch_recon/epoch_size,
+                                           'KL Loss': epoch_KL/epoch_size},
                                             epoch+1)
+        vae.writer.add_scalars('data/LearningRate', optimizer.param_groups[0]['lr'], epoch+1)
+        
         if use_tensorboard == 'Full':
             for name, param in vae.named_parameters():
                 vae.writer.add_histogram(name, param.clone().cpu().data.numpy(), epoch+1)
@@ -257,6 +259,6 @@ for epoch in range(nb_epochs):
 
 #5. TRAINING FINISHED
     
-name = 'conv_config'+str(args.config) + '_final'
-vae.save(name, use_cuda)
+name = 'results/conv_config'+str(args.config) + '_final'
+vae.save(name)
 print("MERCI DE VOTRE PATIENCE MAITRE. \n J'AI FINI L'ENTRAINEMENT ET JE NE SUIS QU'UNE VULGAIRE MACHINE ENTIEREMENT SOUMISE.")

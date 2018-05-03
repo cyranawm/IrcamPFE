@@ -52,11 +52,11 @@ def layers_config(n):
         conv = [conv1, conv2, conv3]
         
         #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
-        h_dims = [[7680, 2048], [2048, 512]]
+        h_dims = [[5120, 2048], [2048, 512]]
         
         #The Deconv Layers: [in_channels, out_channels, kernel_size, stride, padding, output_padding]
-        deconv1 = [16, 8, (10,11), (3,3), (5,2), (0,0)]
-        deconv2 = [8, 4, (7,6), (2,2), (5,0), (0,0)]
+        deconv1 = [16, 8, (10,11), (3,3), (3,2), (0,0)]
+        deconv2 = [8, 4, (7,6), (2,2), (4,0), (0,0)]
         deconv3 = [4, 1, (6,4), (2,2), (3,0), (0,0)]
         deconv = [deconv1, deconv2, deconv3]
         
@@ -100,8 +100,14 @@ def layers_config(n):
 
         
 class Conv_VAE(nn.Module):
-    def __init__(self, conv_list, h_dims, z_dim, deconv_list, nnLin, use_bn, dropout ):
+    def __init__(self, conv_list, h_dims, z_dim, deconv_list, nnLin, use_bn, dropout, use_cuda = False, *args, **kwargs):
         super(Conv_VAE, self).__init__()
+        
+        self.useCuda = use_cuda
+        
+        if not hasattr(self, 'constructor'):
+            self.constructor = {'conv_list':conv_list, 'h_dims':h_dims, 'z_dim':z_dim, 'deconv_list':deconv_list, 'nnLin':nnLin,
+                                'use_bn':use_bn, 'dropout': dropout, 'args':args, 'kwargs':kwargs} # remind construction arguments for easy load/save
         
         activation = {
                 'relu' : nn.ReLU(),
@@ -224,13 +230,37 @@ class Conv_VAE(nn.Module):
         rec_mu, rec_logvar = self.decode(z)
         return rec_mu, rec_logvar, z_mu, z_logvar
     
-    def save(self, name, use_cuda):
-        copy = deepcopy(self.state_dict())
-        if use_cuda:
-            for i, k in copy.items():
-                copy[i] = k.cpu()
-        savepath = 'results/'+name
-        torch.save(copy, savepath)
+#    def save(self, name, use_cuda):
+#        copy = deepcopy(self.state_dict())
+#        if use_cuda:
+#            for i, k in copy.items():
+#                copy[i] = k.cpu()
+#        savepath = 'results/'+name
+#        torch.save(copy, savepath)
+        
+    def save(self, filename, *args, **kwargs):
+        if self.useCuda:
+            state_dict = self.state_dict()
+            for i, k in state_dict.items():
+                state_dict[i] = k.cpu()
+        else:
+            state_dict = self.state_dict()
+        constructor = dict(self.constructor)
+        save = {'state_dict':state_dict, 'init_args':constructor, 'class':self.__class__}
+        for k,v in kwargs.items():
+            save[k] = v
+        torch.save(save, filename)
+        
+            
+    @classmethod
+    def load(cls, pickle):
+        init_args = pickle['init_args']
+        for k,v in init_args['kwargs'].items():
+            init_args[k] = v
+        del init_args['kwargs']
+        vae = cls(**pickle['init_args'])
+        vae.load_state_dict(pickle['state_dict'])
+        return vae
         
     def valid_loss(self, validset, beta, use_cuda, last_batch = False):
         
