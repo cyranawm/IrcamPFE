@@ -43,7 +43,7 @@ def PlotPCA(VAE, dataloader, path, PCAdim = 2):
         
         #2. Forward data
         rec_mu, rec_logvar, z_mu, z_logvar = VAE.forward(x)
-        z_array.append(z_mu.data.numpy())
+        z_array.append(z_mu.data.cpu().numpy())
         
         lbl_array.append(label[0])
     
