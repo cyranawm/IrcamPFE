@@ -33,6 +33,8 @@ def PlotPCA(VAE, dataloader, path, PCAdim = 2):
     z_array = []
     lbl_array = []
     
+    print('Starting forward pass')
+    
     for i, data in enumerate(dataloader):
         raw_input, label = data
         pre_process = torch.from_numpy(raw_input).float()
@@ -47,10 +49,12 @@ def PlotPCA(VAE, dataloader, path, PCAdim = 2):
         
         lbl_array.append(label[0])
     
+    print('Ended forward pass')
     
     z_array = np.array(z_array)[:,0,:]
     print(lbl_array)
     sklearn_pca = sklearnPCA(PCAdim)
+    print('Starting PCA')
     PCA_proj = sklearn_pca.fit_transform(z_array)
     
     colors = ["red", "green", "blue"]
@@ -59,6 +63,7 @@ def PlotPCA(VAE, dataloader, path, PCAdim = 2):
     labels = ['Kicks', 'Snares', 'Claps']
     lbl_array = [labels[i] for i in lbl_array]
     
+    print('Starting plots')
     fig, ax = plt.subplots()
     for data, color, label in zip(PCA_proj, col_array, lbl_array):
         x, y = data[0], data[1]
