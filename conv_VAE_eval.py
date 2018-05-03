@@ -14,7 +14,7 @@ from skimage.transform import resize
 import torch
 
 from outils.scaling import scale_array
-from outils.visualize import PlotPCA
+from outils.visualize import PlotPCA2D, PlotPCA3D
 from models.VAE.Conv_VAE import Conv_VAE, conv_loss, layers_config
 
 sys.path.append('./aciditools/')
@@ -94,7 +94,8 @@ vae.eval()
 #%%
 
 
-PlotPCA(vae, evalloader, './results/images/PCA' + args.model.split('/')[-1] +'.png')
+PlotPCA2D(vae, evalloader, './results/images/PCA2d_' + args.model.split('/')[-1] +'.png')
+PlotPCA3D(vae, evalloader, './results/images/PCA3d_' + args.model.split('/')[-1] +'.png')
 
 
 
