@@ -98,10 +98,11 @@ vae.eval()
 #%%
 
 
-PlotPCA2D(vae, evalloader, './results/images/PCA2d_' + args.model.split('/')[-1] +'.png')
-PlotPCA3D(vae, evalloader, './results/images/PCA3d_' + args.model.split('/')[-1] +'.png')
+PlotPCA2D(vae, evalloader, './results/images/PCA/PCA2d_' + args.model.split('/')[-1] +'.png')
+pca3d, colors = PlotPCA3D(vae, evalloader, './results/images/PCA/PCA3d_' + args.model.split('/')[-1] +'.png')
 
-
+np.save('./results/images/PCA/pca3D'+ args.model.split('/')[-1] + '_data', pca3d)
+np.save('./results/images/PCA/pca3D_' + args.model.split('/')[-1] + 'colors', colors)
 
 
 

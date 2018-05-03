@@ -140,4 +140,36 @@ def PlotPCA3D(VAE, dataloader, path):
     ax.grid(True)
     fig.savefig(path)
     
-    return PCA_proj
+    return PCA_proj, col_array
+
+
+
+def npy2scatter(dat, col):
+    
+    labels = ['Kicks', 'Snares', 'Claps']
+    colors = ["red", "green", "blue"]
+
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    for data, color in zip(dat, col):
+        x, y, z = data[0], data[1], data[2]
+        ax.scatter(x, y, z, alpha=0.8, c=color, edgecolors='none', s=30)
+    
+    handles = []
+    for col, lbl in zip(colors, labels):
+        patch = mpatches.Circle(xy = (0,0), radius = 1, color=col, label=lbl)
+        handles.append(patch)
+
+    
+    ax.legend(handles = handles)
+    ax.grid(True)
+    plt.show()
+
+
+
+
+
+
+
+
