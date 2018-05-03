@@ -86,7 +86,10 @@ evalloader = DataLoader(dataset, 1, task = 'instrument')
 model = args.model
 dico = torch.load(model)
 vae = dico["class"].load(dico)
+if torch.cuda.is_available():
+    vae.cuda()
 vae.eval()
+
 
 #%%
 
