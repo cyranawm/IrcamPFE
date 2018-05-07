@@ -68,7 +68,7 @@ else:
     path = '/Users/cyranaouameur/Desktop/StageIrcam/Code/CodeCyran/datasets/DummyDrumsCropped'
 
 print('IMPORT DATA')
-dataset = importDataset(base_path = path, targetDur = 0.74304)
+dataset = importDataset(base_path = path, targetDur = 1.15583)
 
 dataset.metadata['instrument'] = np.array(dataset.metadata['instrument']) #to array
 dataset.data = np.abs(dataset.data) # to real positive array

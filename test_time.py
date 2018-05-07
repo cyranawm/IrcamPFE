@@ -42,3 +42,4 @@ for l in lengths:
     
     
 #target time = 0.74304
+#target 2 = 1.15583
