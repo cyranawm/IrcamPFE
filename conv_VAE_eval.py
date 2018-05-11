@@ -122,7 +122,7 @@ if args.sound:
     nb_rec, nb_lines = args.sound
     
     soundPath = './results/sounds/'
-    regenerate(vae, dataset, nb = nb_rec, norm_const, normalize, log_scaling, downFactor, soundPath)
+    regenerate(vae, dataset, nb_rec, norm_const, normalize, log_scaling, downFactor, soundPath)
 
 
     #get latent coords for each entry ?
