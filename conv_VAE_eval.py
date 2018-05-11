@@ -22,9 +22,11 @@ parser.add_argument('--gpu', type=int, default=1, metavar='N',
 parser.add_argument('--pca', action='store_true',
                     help='compute PCA')
 
-parser.add_argument('--sound', type=int, nargs = 2, metavar = ('nb_reconstructions','nb_lines'), 
-                    help='Compute sounds ')
+parser.add_argument('--soundrec', type=int, metavar = 'nb_reconstructions', 
+                    help='Compute reconstructions ')
 
+parser.add_argument('--soundlines', type=int, metavar = 'nb_lines', 
+                    help='Compute sound lines ')
 args = parser.parse_args()
 
 
@@ -117,14 +119,16 @@ if args.pca:
 
 #%%
 
-if args.sound:
+if args.soundrec:
     
-    nb_rec, nb_lines = args.sound
+    nb_rec = args.soundrec
     
     soundPath = './results/sounds/'
     regenerate(vae, dataset, nb_rec, norm_const, normalize, log_scaling, downFactor, soundPath)
 
-
+if args.soundlines:
+    
+    nb_lines = args.soundlines
     #get latent coords for each entry ?
     
     latentCoords = [] 
@@ -156,7 +160,7 @@ if args.sound:
         line = Variable(line)
         x_rec = vae.decode(line)[0]
         #regenerate
-        for i, nsgt in enumerate(x_rec.data.numpy()):
+        for i, nsgt in enumerate(x_rec.data.cpu().numpy()):
             nnIndex = get_nn(latentCoords, line_coords[i])
             nn = dataset.files[nnIndex]
             nnPhase = get_phase(nn, targetLen)
