@@ -122,58 +122,58 @@ if args.sound:
     regenerate(vae, dataset, 10, norm_const, normalize, log_scaling, downFactor, soundPath)
 
 
-#%%get latent coords for each entry ?
-
-latentCoords = [] 
-nb_samples = 10   
-soundPath = './results/sounds/line/'
-targetLen = int(1.15583*22050)
-
-for i, raw_input in enumerate(dataset.data):
+    #get latent coords for each entry ?
     
-    pre_process = torch.from_numpy(raw_input).float()
-    if torch.cuda.is_available():
-        pre_process = pre_process.cuda()
-    pre_process = pre_process.unsqueeze(0)
-    pre_process = pre_process.unsqueeze(0)#add 2 dimensions to forward into vae
-    x = Variable(pre_process)
+    latentCoords = [] 
+    nb_samples = 10   
+    soundPath = './results/sounds/line/'
+    targetLen = int(1.15583*22050)
     
-    rec_mu, rec_logvar, z_mu, z_logvar = vae.forward(x)
-    latentCoords.append(z_mu.data.cpu().numpy())
+    for i, raw_input in enumerate(dataset.data):
+        
+        pre_process = torch.from_numpy(raw_input).float()
+        if torch.cuda.is_available():
+            pre_process = pre_process.cuda()
+        pre_process = pre_process.unsqueeze(0)
+        pre_process = pre_process.unsqueeze(0)#add 2 dimensions to forward into vae
+        x = Variable(pre_process)
+        
+        rec_mu, rec_logvar, z_mu, z_logvar = vae.forward(x)
+        latentCoords.append(z_mu.data.cpu().numpy())
+        
+    for n in range(1):
+        #take 2 coord set and draw a line
+        i, j = np.random.randint(len(latentCoords)), np.random.randint(len(latentCoords))
+        line_coords = create_line(latentCoords[i], latentCoords[j], nb_samples)
+        
+        #decode for each
+        line = torch.from_numpy(line_coords).float()
+        if torch.cuda.is_available():
+            line = line.cuda()
+        line = Variable(line)
+        x_rec = vae.decode(line)[0]
+        #regenerate
+        for i, nsgt in enumerate(x_rec.data.numpy()):
+            nnIndex = get_nn(latentCoords, line_coords[i])
+            nn = dataset.files[nnIndex]
+            nnPhase = get_phase(nn, targetLen)
+            
+            #suppress dumb sizes and transpose to regenerate
+            nsgt = nsgt[0].T
+            
+            #compute the resize needed
+            nbFreq, nbFrames = regenerateAudio(np.zeros((1, 1)), testSize = True, targetLen = targetLen)
     
-for n in range(1):
-    #take 2 coord set and draw a line
-    i, j = np.random.randint(len(latentCoords)), np.random.randint(len(latentCoords))
-    line_coords = create_line(latentCoords[i], latentCoords[j], nb_samples)
+            # RE-UPSAMPLE the distribution
+            factor = np.max(np.abs(nsgt))        
+            nsgt = resize(nsgt/factor, (nbFreq, nbFrames), mode='constant')
+            nsgt *= factor
+            
+            #rescale
+            nsgt = unscale_array(nsgt, norm_const, normalize, log_scaling)
+            
+            regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=500, initPhase = nnPhase, curName=soundPath + str(n) + '_' + str(i))
     
-    #decode for each
-    line = torch.from_numpy(line_coords).float()
-    if torch.cuda.is_available():
-        line = line.cuda()
-    line = Variable(line)
-    x_rec = vae.decode(line)[0]
-    #regenerate
-    for i, nsgt in enumerate(x_rec.data.numpy()):
-        nnIndex = get_nn(latentCoords, line_coords[i])
-        nn = dataset.files[nnIndex]
-        nnPhase = get_phase(nn, targetLen)
-        
-        #suppress dumb sizes and transpose to regenerate
-        nsgt = nsgt[0].T
-        
-        #compute the resize needed
-        nbFreq, nbFrames = regenerateAudio(np.zeros((1, 1)), testSize = True, targetLen = targetLen)
-
-        # RE-UPSAMPLE the distribution
-        factor = np.max(np.abs(nsgt))        
-        nsgt = resize(nsgt/factor, (nbFreq, nbFrames), mode='constant')
-        nsgt *= factor
-        
-        #rescale
-        nsgt = unscale_array(nsgt, norm_const, normalize, log_scaling)
-        
-        regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=500, initPhase = nnPhase, curName=soundPath + str(n) + '_' + str(i))
-
 
 #%%
 #
