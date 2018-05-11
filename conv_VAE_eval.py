@@ -172,7 +172,7 @@ if args.sound:
             #rescale
             nsgt = unscale_array(nsgt, norm_const, normalize, log_scaling)
             
-            regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=500, initPhase = nnPhase, curName=soundPath + str(n) + '_' + str(i))
+            regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=1000, initPhase = nnPhase, curName=soundPath + str(n) + '_' + str(i))
     
 
 #%%
