@@ -14,7 +14,7 @@ from skimage.transform import resize
 def pre_process_output():
     print('Mata ne')
     
-def regenerateAudio(data, minFreq = 30, maxFreq = 11000, nsgtBins = 48, sr = 22050, scale = 'oct', targetLen = 3*22050, iterations = 100, momentum=False, testSize=False, curName=None, crop = None):
+def regenerateAudio(data, minFreq = 30, maxFreq = 11000, nsgtBins = 48, sr = 22050, scale = 'oct', targetLen = 3*22050, iterations = 100, momentum=False, testSize=False, curName=None, crop = None, initPhase = None):
     # Create a scale
     if (scale == 'oct'):
         scl = OctScale(minFreq, maxFreq, nsgtBins)
@@ -35,7 +35,13 @@ def regenerateAudio(data, minFreq = 30, maxFreq = 11000, nsgtBins = 48, sr = 220
         return nbFreqs, targetFrames
     # Now Griffin-Lim dat
     print('Start Griffin-Lim')
-    p = 2 * np.pi * np.random.random_sample(data.shape) - np.pi
+    p = np.pi * np.random.randn(data.shape[0], data.shape[1])
+    if initPhase is not None:
+        phaseRamp = np.linspace(0,1,data.shape[1])
+        noiseRamp = np.linspace(1,0,data.shape[1])
+        p = initPhase * phaseRamp + (p * noiseRamp)
+        #p[int(data.shape[1] / 2):] = initPhase[int(data.shape[1] / 2):]
+        #p = initPhase
     for i in range(iterations):
         S = data * np.exp(1j*p)
         inv_p = np.array(list(nsgt.backward(S)))#transformHandler(S, transformType, 'inverse', options)

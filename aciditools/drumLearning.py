@@ -22,7 +22,7 @@ def importDataset(base_path = '/fast-1/DrumsDataset', targetDur = None):
       "taskCallback":None,                                    # Function to import task metadata
       "verbose":True,                                         # Be verbose or not
       "checkIntegrity":True,                                  # Check that files exist (while loading)
-      "forceUpdate":False,                                    # Force the update
+      "forceUpdate":True,                                    # Force the update
       "forceRecompute":False
     };
     
@@ -42,6 +42,8 @@ def importDataset(base_path = '/fast-1/DrumsDataset', targetDur = None):
     transformParameters = [transformParameters]
     if targetDur is not None:
         transformParameters[0]['targetDuration'] = targetDur
+#    if downsampleFactor is not None:
+#        transformParameters[0]['downsampleFactor'] = downsampleFactor
     
     transformOptions['transformParameters'] = transformParameters
     audioSet.computeTransforms(None, transformOptions, padding=False)

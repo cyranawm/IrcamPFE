@@ -201,7 +201,7 @@ class Conv_VAE(nn.Module):
         
     def encode(self, x):
         out_conv = self.enc_conv(x)
-        self.unflat_size = out_conv.size()
+        self.unflat_size = (out_conv.size(-3), out_conv.size(-2), out_conv.size(-1))
         flat_dim = out_conv.size()[-1] * out_conv.size()[-2] * out_conv.size()[-3]
         in_MLP = out_conv.view(-1, flat_dim)
         h = self.enc_MLP(in_MLP)
@@ -218,7 +218,8 @@ class Conv_VAE(nn.Module):
     
     def decode(self, z):
         out_MLP = self.dec_MLP(z)
-        in_deconv = out_MLP.view(self.unflat_size)
+        size = (out_MLP.size(0), self.unflat_size[0], self.unflat_size[1], self.unflat_size[2])
+        in_deconv = out_MLP.view(size)
         h = self.dec_conv(in_deconv)
         rec_mu, rec_logvar = self.hrec_mu(h), self.hrec_logvar(h)
         return rec_mu, rec_logvar

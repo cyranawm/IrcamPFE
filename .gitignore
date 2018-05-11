@@ -11,7 +11,10 @@ trash/*
 
 tests/*
 
+
 aciditools/*
 !aciditools/drumLearning.py
 
 results/*
+
+*.wav

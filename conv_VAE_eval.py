@@ -40,11 +40,14 @@ from skimage.transform import resize
 
 
 import torch
+from torch.autograd import Variable
 
-from outils.scaling import scale_array
+from outils.scaling import scale_array, unscale_array
 from outils.visualize import PlotPCA2D, PlotPCA3D, npy2scatter
 from models.VAE.Conv_VAE import Conv_VAE, conv_loss, layers_config
-from outils.sound import regenerate
+from outils.sound import regenerate, create_line, get_nn, get_phase
+from outils.nsgt_inversion import regenerateAudio
+
 
 sys.path.append('./aciditools/')
 try:
@@ -57,8 +60,6 @@ except:
 
 
 #%% Compute transforms and load data
-log_scaling = True
-normalize = 'gaussian'
 
 if torch.cuda.is_available():
     torch.cuda.set_device(args.gpu)
@@ -71,8 +72,9 @@ print('IMPORT DATA')
 dataset = importDataset(base_path = path, targetDur = 1.15583)
 
 dataset.metadata['instrument'] = np.array(dataset.metadata['instrument']) #to array
+#phases = np.angle(dataset.data)
 dataset.data = np.abs(dataset.data) # to real positive array
-
+#%%
 
 #downsample by a given factor
 nbFrames, nbBins = dataset.get(0).shape
@@ -83,6 +85,8 @@ for img in dataset.data:
 in_shape = (int(nbFrames / downFactor), nbBins)
 
 #Scale data
+log_scaling = True
+normalize = 'gaussian'
 dataset.data, norm_const = scale_array(downsampled, log_scaling, normalize) 
 
 #Create the Loaders
@@ -100,6 +104,7 @@ if torch.cuda.is_available():
 vae.eval()
 
 
+
 #%%
 
 if args.pca: 
@@ -107,14 +112,68 @@ if args.pca:
     pca3d, colors = PlotPCA3D(vae, evalloader, './results/images/PCA/PCA3d_' + args.model.split('/')[-1] +'.png')
     
     np.save('./results/images/PCA/pca3D_'+ args.model.split('/')[-1] + '_data', pca3d)
-    np.save('./results/images/PCA/pca3D_' + args.model.split('/')[-1] + 'colors', colors)
+    np.save('./results/images/PCA/pca3D_' + args.model.split('/')[-1] + '_colors', colors)
 
 
 #%%
 
 if args.sound:
     soundPath = './results/sounds/'
-    regenerate(vae, evalloader, norm_const, normalize, log_scaling, downFactor, soundPath)
+    regenerate(vae, dataset, 10, norm_const, normalize, log_scaling, downFactor, soundPath)
+
+
+#%%get latent coords for each entry ?
+
+latentCoords = [] 
+nb_samples = 10   
+soundPath = './results/sounds/line/'
+targetLen = int(1.15583*22050)
+
+for i, raw_input in enumerate(dataset.data):
+    
+    pre_process = torch.from_numpy(raw_input).float()
+    if torch.cuda.is_available():
+        pre_process = pre_process.cuda()
+    pre_process = pre_process.unsqueeze(0)
+    pre_process = pre_process.unsqueeze(0)#add 2 dimensions to forward into vae
+    x = Variable(pre_process)
+    
+    rec_mu, rec_logvar, z_mu, z_logvar = vae.forward(x)
+    latentCoords.append(z_mu.data.cpu().numpy())
+    
+for n in range(1):
+    #take 2 coord set and draw a line
+    i, j = np.random.randint(len(latentCoords)), np.random.randint(len(latentCoords))
+    line_coords = create_line(latentCoords[i], latentCoords[j], nb_samples)
+    
+    #decode for each
+    line = torch.from_numpy(line_coords).float()
+    if torch.cuda.is_available():
+        line = line.cuda()
+    line = Variable(line)
+    x_rec = vae.decode(line)[0]
+    #regenerate
+    for i, nsgt in enumerate(x_rec.data.numpy()):
+        nnIndex = get_nn(latentCoords, line_coords[i])
+        nn = dataset.files[nnIndex]
+        nnPhase = get_phase(nn, targetLen)
+        
+        #suppress dumb sizes and transpose to regenerate
+        nsgt = nsgt[0].T
+        
+        #compute the resize needed
+        nbFreq, nbFrames = regenerateAudio(np.zeros((1, 1)), testSize = True, targetLen = targetLen)
+
+        # RE-UPSAMPLE the distribution
+        factor = np.max(np.abs(nsgt))        
+        nsgt = resize(nsgt/factor, (nbFreq, nbFrames), mode='constant')
+        nsgt *= factor
+        
+        #rescale
+        nsgt = unscale_array(nsgt, norm_const, normalize, log_scaling)
+        
+        regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=500, initPhase = nnPhase, curName=soundPath + str(n) + '_' + str(i))
+
 
 #%%
 #

@@ -57,7 +57,6 @@ def unscale_array(scaled_data,data_scales,scaling,log_scaling):
         unscaled_data = scaled_data+data_scales[0]
         
     if log_scaling:
-        print('unscale from the log')
         unscaled_data = np.exp(unscaled_data)
         
     return unscaled_data
