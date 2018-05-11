@@ -22,8 +22,8 @@ parser.add_argument('--gpu', type=int, default=1, metavar='N',
 parser.add_argument('--pca', action='store_true',
                     help='compute PCA')
 
-parser.add_argument('--sound', action='store_true',
-                    help='compute sounds')
+parser.add_argument('--sound', type=int, nargs = 2, metavar = ('nb_reconstructions','nb_lines'), 
+                    help='Compute sounds ')
 
 args = parser.parse_args()
 
@@ -118,8 +118,11 @@ if args.pca:
 #%%
 
 if args.sound:
+    
+    nb_rec, nb_lines = args.sound
+    
     soundPath = './results/sounds/'
-    regenerate(vae, dataset, 10, norm_const, normalize, log_scaling, downFactor, soundPath)
+    regenerate(vae, dataset, nb = nb_rec, norm_const, normalize, log_scaling, downFactor, soundPath)
 
 
     #get latent coords for each entry ?
@@ -141,7 +144,7 @@ if args.sound:
         rec_mu, rec_logvar, z_mu, z_logvar = vae.forward(x)
         latentCoords.append(z_mu.data.cpu().numpy())
         
-    for n in range(1):
+    for n in range(nb_lines):
         #take 2 coord set and draw a line
         i, j = np.random.randint(len(latentCoords)), np.random.randint(len(latentCoords))
         line_coords = create_line(latentCoords[i], latentCoords[j], nb_samples)
