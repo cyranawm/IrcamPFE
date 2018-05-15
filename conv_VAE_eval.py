@@ -135,7 +135,7 @@ if args.soundrec:
     nb_rec = args.soundrec
     
     soundPath = results_folder + 'sounds/'
-    regenerate(vae, dataset, nb_rec, norm_const, normalize, log_scaling, downFactor, soundPath)
+    regenerate(vae, dataset, nb_rec, norm_const, normalize, log_scaling, downFactor, soundPath, crop = 0.8)
 
 if args.soundlines:
     
@@ -190,7 +190,7 @@ if args.soundlines:
             #rescale
             nsgt = unscale_array(nsgt, norm_const, normalize, log_scaling)
             
-            regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=1000, initPhase = nnPhase, curName=soundPath + str(n) + '_' + str(i))
+            regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=1000, initPhase = nnPhase, crop = 0.8, curName=soundPath + str(n) + '_' + str(i))
     
 
 #%%

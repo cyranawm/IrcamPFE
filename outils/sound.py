@@ -20,7 +20,7 @@ from nsgt.cq import NSGT
 def get_phase(filename, targetLen):
     sig, sr = librosa.load(filename)
     original_name = filename.split('/')[-1]
-    print('** Computing for '+original_name + '**')
+    print('** Computing for '+original_name + ' **')
     # Ensure signal is of rightful size
     if (len(sig) > targetLen):
         sig = sig[:int(targetLen)]
@@ -44,7 +44,7 @@ def get_phase(filename, targetLen):
 
 
 
-def regenerate(VAE, dataset, nb, scale_param, scaling, log_scaling, downFactor, soundPath):
+def regenerate(VAE, dataset, nb, scale_param, scaling, log_scaling, downFactor, soundPath, crop = False):
     
     targetLen = 25486
     it = 1000
@@ -90,8 +90,8 @@ def regenerate(VAE, dataset, nb, scale_param, scaling, log_scaling, downFactor, 
         initPhase = get_phase(dataset.files[i], targetLen)
         
         name =  str(i)
-        regenerateAudio(originalNSGT, targetLen = targetLen, iterations=it, curName= soundPath+name, initPhase = initPhase)        
-        regenerateAudio(recNSGT, targetLen = targetLen, iterations=it, curName= soundPath + name + '_rec', initPhase = initPhase)
+        regenerateAudio(originalNSGT, targetLen = targetLen, iterations=it, curName= soundPath+name, initPhase = initPhase, crop = crop)        
+        regenerateAudio(recNSGT, targetLen = targetLen, iterations=it, curName= soundPath + name + '_rec', initPhase = initPhase, crop = crop)
         
         
 def get_nn(coords, point):
