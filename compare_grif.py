@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu May  3 11:06:43 2018
+Created on Tue May 15 17:55:53 2018
 
 @author: cyranaouameur
 """
@@ -117,17 +117,6 @@ for folder in subfolders:
         os.makedirs(results_folder + folder)
     
 
-
-#%%
-
-if args.pca: 
-    PlotPCA2D(vae, evalloader, results_folder + 'images/PCA/PCA2d_' + args.model.split('/')[-1] +'.png')
-    pca3d, colors = PlotPCA3D(vae, evalloader, results_folder + 'images/PCA/PCA3d_' + args.model.split('/')[-1] +'.png')
-    
-    np.save(results_folder + 'images/PCA/pca3D_'+ args.model.split('/')[-1] + '_data', pca3d)
-    np.save(results_folder + 'images/PCA/pca3D_' + args.model.split('/')[-1] + '_colors', colors)
-
-
 #%%
 
 if args.soundrec:
@@ -190,7 +179,10 @@ if args.soundlines:
             #rescale
             nsgt = unscale_array(nsgt, norm_const, normalize, log_scaling)
             
-            regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=1000, initPhase = nnPhase, crop = 0.8, curName=soundPath + str(n) + '_' + str(i))
+            for it in [100,200,300]:
+                for ph in [None, nnPhase]:
+                    regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=it, 
+                                    initPhase = ph, crop = 0.8, curName=soundPath + str(n) + '_' + str(i) + '_' + str(it) + '_ph' + str(ph == None))
     
 
 #%%
