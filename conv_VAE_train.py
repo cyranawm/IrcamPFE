@@ -56,6 +56,7 @@ import numpy as np
 import sys
 from skimage.transform import resize
 
+import os
 
 import torch
 import torch.optim as optim
@@ -155,6 +156,13 @@ if use_tensorboard:
     
     
 #%%Training routine
+    
+model_name = 'conv_config'+str(args.config)
+results_folder = './results/'+model_name
+if not os.path.isdir(results_folder):
+    os.makedirs(results_folder)
+    os.makedirs(results_folder + '/images/reconstructions')
+    os.makedirs(results_folder + '/checkpoints')
 
 nb_epochs = args.epochs
 vae.train()
@@ -230,7 +238,7 @@ for epoch in range(nb_epochs):
             plt.subplot(2,5,5+idx)
             output = rec_mu[idx].view(in_shape[0], in_shape[1])
             plt.imshow(output.clone().cpu().data) #still a variable
-        fig.savefig('./results/images/reconstructions/train_epoch'+str(epoch)+'.png' )
+        fig.savefig(results_folder + '/images/reconstructions/train_epoch'+str(epoch)+'.png' )
         
         #from validset
         fig = plt.figure()
@@ -241,11 +249,11 @@ for epoch in range(nb_epochs):
             plt.subplot(2,5,5+idx)
             output = valid_out[idx].view(in_shape[0], in_shape[1])
             plt.imshow(output.clone().cpu().data) #still a variable
-        fig.savefig('./results/images/reconstructions/valid_epoch'+str(epoch)+'.png' )
+        fig.savefig(results_folder + '/images/reconstructions/valid_epoch'+str(epoch)+'.png' )
         
 #saving model 
     if np.mod(epoch,200) == 0: 
-        name = 'results/checkpoints/conv_config'+str(args.config) + '_ep' + str(epoch)
+        name = results_folder + '/checkpoints/conv_config'+str(args.config) + '_ep' + str(epoch)
         vae.save(name, use_cuda)
             
 #Print stats
@@ -259,6 +267,6 @@ for epoch in range(nb_epochs):
 
 #5. TRAINING FINISHED
     
-name = 'results/conv_config'+str(args.config) + '_final'
+name = results_folder + '/conv_config'+str(args.config) + '_final'
 vae.save(name)
 print("MERCI DE VOTRE PATIENCE MAITRE. \n J'AI FINI L'ENTRAINEMENT ET JE NE SUIS QU'UNE VULGAIRE MACHINE ENTIEREMENT SOUMISE.")
