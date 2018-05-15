@@ -126,7 +126,6 @@ if args.soundrec:
     for it in [100,200,300]:
         for ph in [False, True]:
             ext = '_'+str(it)+str(ph)
-            print(ph)
             regenerate(vae, dataset, nb_rec, it, norm_const, normalize, log_scaling, downFactor, soundPath, initPhase = ph, nameExtension = ext)
 
 if args.soundlines:

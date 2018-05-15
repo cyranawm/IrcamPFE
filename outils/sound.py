@@ -85,11 +85,11 @@ def regenerate(VAE, dataset, nb, it, scale_param, scaling, log_scaling, downFact
         
         # Now invert (with upsampled version)
         if initPhase:
-            initPhase = get_phase(dataset.files[i], targetLen)
+            phase = get_phase(dataset.files[i], targetLen)
         
         filename =  str(i) + nameExtension #to test on various parameters sets
-        regenerateAudio(originalNSGT, targetLen = targetLen, iterations=it, curName= soundPath + filename, initPhase = initPhase, crop = crop)        
-        regenerateAudio(recNSGT, targetLen = targetLen, iterations=it, curName= soundPath + filename + '_rec', initPhase = initPhase, crop = crop)
+        regenerateAudio(originalNSGT, targetLen = targetLen, iterations=it, curName= soundPath + filename, initPhase = phase, crop = crop)        
+        regenerateAudio(recNSGT, targetLen = targetLen, iterations=it, curName= soundPath + filename + '_rec', initPhase = phase, crop = crop)
         
         
 def get_nn(coords, point):
