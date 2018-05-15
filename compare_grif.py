@@ -113,7 +113,7 @@ results_folder = args.resfold
 subfolders = ['images/PCA', 'sounds', 'sounds/line']
 
 for folder in subfolders:
-    if not os.path.isdir(folder):
+    if not os.path.isdir(results_folder + folder):
         os.makedirs(results_folder + folder)
     
 
@@ -133,7 +133,7 @@ if args.soundlines:
     
     latentCoords = [] 
     nb_samples = 10   
-    soundPath = soundPath + 'line/'
+    soundPath = results_folder + 'sounds/line/'
     targetLen = int(1.15583*22050)
     
     for i, raw_input in enumerate(dataset.data):
@@ -180,9 +180,13 @@ if args.soundlines:
             nsgt = unscale_array(nsgt, norm_const, normalize, log_scaling)
             
             for it in [100,200,300]:
-                for ph in [None, nnPhase]:
+                for ph in [False, True]:
+                    if ph == True:
+                        phase = nnPhase
+                    else:
+                        phase = False
                     regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=it, 
-                                    initPhase = ph, crop = 0.8, curName=soundPath + str(n) + '_' + str(i) + '_' + str(it) + '_ph' + str(ph == None))
+                                    initPhase = ph, crop = 0.8, curName=soundPath + str(n) + '_' + str(i) + '_' + str(it) + '_ph' + str(ph)
     
 
 #%%
