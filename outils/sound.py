@@ -59,7 +59,6 @@ def regenerate(VAE, dataset, nb, scale_param, scaling, log_scaling, downFactor, 
         pre_process = pre_process.unsqueeze(0)
         pre_process = pre_process.unsqueeze(0)#add 2 dimensions to forward into vae
         x = Variable(pre_process)
-        print(x.size())
         
         #2. Forward data
         rec_mu, rec_logvar, z_mu, z_logvar = VAE.forward(x)

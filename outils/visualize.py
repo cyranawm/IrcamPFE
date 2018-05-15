@@ -54,7 +54,6 @@ def PlotPCA2D(VAE, dataloader, path):
     print('Ended forward pass')
     
     z_array = np.array(z_array)[:,0,:]
-    print(lbl_array)
     sklearn_pca = sklearnPCA(2)
     print('Starting PCA')
     PCA_proj = sklearn_pca.fit_transform(z_array)
@@ -112,7 +111,6 @@ def PlotPCA3D(VAE, dataloader, path):
     print('Ended forward pass')
     
     z_array = np.array(z_array)[:,0,:]
-    print(lbl_array)
     sklearn_pca = sklearnPCA(3)
     print('Starting PCA')
     PCA_proj = sklearn_pca.fit_transform(z_array)

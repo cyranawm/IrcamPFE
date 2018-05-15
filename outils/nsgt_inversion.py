@@ -27,7 +27,7 @@ def regenerateAudio(data, minFreq = 30, maxFreq = 11000, nsgtBins = 48, sr = 220
     # Run a forward test 
     if (testSize):
         testForward = np.array(list(nsgt.forward(np.zeros(targetLen))))
-        print(testForward.shape)
+        #print(testForward.shape)
         targetFrames = testForward.shape[1]
         nbFreqs = testForward.shape[0]
         #assert(data.shape[0] == nbFreqs)
