@@ -17,7 +17,7 @@ parser.add_argument('model', type=str,
                     help='<Required> Choice of the model to evaluate')
 
 parser.add_argument('resfold', type=str,
-                    help='<Required> Folder where the results will be saved')
+                    help='<Required> Folder where the results will be saved (ends with /)')
 
 parser.add_argument('--gpu', type=int, default=1, metavar='N',
                     help='The ID of the GPU to use')
@@ -110,7 +110,7 @@ if torch.cuda.is_available():
 vae.eval()
 
 results_folder = args.resfold
-subfolders = ['/images/PCA', '/sounds', '/sounds/line']
+subfolders = ['images/PCA', 'sounds', 'sounds/line']
 
 for folder in subfolders:
     if not os.path.isdir(folder):
@@ -121,11 +121,11 @@ for folder in subfolders:
 #%%
 
 if args.pca: 
-    PlotPCA2D(vae, evalloader, results_folder + '/images/PCA/PCA2d_' + args.model.split('/')[-1] +'.png')
-    pca3d, colors = PlotPCA3D(vae, evalloader, results_folder + '/images/PCA/PCA3d_' + args.model.split('/')[-1] +'.png')
+    PlotPCA2D(vae, evalloader, results_folder + 'images/PCA/PCA2d_' + args.model.split('/')[-1] +'.png')
+    pca3d, colors = PlotPCA3D(vae, evalloader, results_folder + 'images/PCA/PCA3d_' + args.model.split('/')[-1] +'.png')
     
-    np.save(results_folder + '/images/PCA/pca3D_'+ args.model.split('/')[-1] + '_data', pca3d)
-    np.save(results_folder + '/images/PCA/pca3D_' + args.model.split('/')[-1] + '_colors', colors)
+    np.save(results_folder + 'images/PCA/pca3D_'+ args.model.split('/')[-1] + '_data', pca3d)
+    np.save(results_folder + 'images/PCA/pca3D_' + args.model.split('/')[-1] + '_colors', colors)
 
 
 #%%
@@ -134,7 +134,7 @@ if args.soundrec:
     
     nb_rec = args.soundrec
     
-    soundPath = results_folder + '/sounds/'
+    soundPath = results_folder + 'sounds/'
     regenerate(vae, dataset, nb_rec, norm_const, normalize, log_scaling, downFactor, soundPath)
 
 if args.soundlines:
