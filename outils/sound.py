@@ -44,7 +44,7 @@ def get_phase(filename, targetLen):
 
 
 
-def regenerate(VAE, dataset, nb, it, scale_param, scaling, log_scaling, downFactor, soundPath, crop = False, initPhase = True, nameExtension = ''):
+def regenerate(VAE, dataset, nb, it, scale_param, scaling, log_scaling, downFactor, soundPath, crop = None, initPhase = True, nameExtension = ''):
     
     targetLen = 25486
     
