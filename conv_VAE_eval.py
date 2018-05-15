@@ -121,11 +121,11 @@ for folder in subfolders:
 #%%
 
 if args.pca: 
-    PlotPCA2D(vae, evalloader, './results/images/PCA/PCA2d_' + args.model.split('/')[-1] +'.png')
-    pca3d, colors = PlotPCA3D(vae, evalloader, './results/images/PCA/PCA3d_' + args.model.split('/')[-1] +'.png')
+    PlotPCA2D(vae, evalloader, results_folder + '/images/PCA/PCA2d_' + args.model.split('/')[-1] +'.png')
+    pca3d, colors = PlotPCA3D(vae, evalloader, results_folder + '/images/PCA/PCA3d_' + args.model.split('/')[-1] +'.png')
     
-    np.save('./results/images/PCA/pca3D_'+ args.model.split('/')[-1] + '_data', pca3d)
-    np.save('./results/images/PCA/pca3D_' + args.model.split('/')[-1] + '_colors', colors)
+    np.save(results_folder + '/images/PCA/pca3D_'+ args.model.split('/')[-1] + '_data', pca3d)
+    np.save(results_folder + '/images/PCA/pca3D_' + args.model.split('/')[-1] + '_colors', colors)
 
 
 #%%
