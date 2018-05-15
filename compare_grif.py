@@ -125,7 +125,8 @@ if args.soundrec:
     soundPath = results_folder + 'sounds/'
     for it in [100,200,300]:
         for ph in [False, True]:
-            regenerate(vae, dataset, nb_rec, it, norm_const, normalize, log_scaling, downFactor, soundPath, initPhase = ph)
+            ext = str(it)+str(ph)+'_'
+            regenerate(vae, dataset, nb_rec, it, norm_const, normalize, log_scaling, downFactor, soundPath, initPhase = ph, nameExtension = ext)
 
 if args.soundlines:
     

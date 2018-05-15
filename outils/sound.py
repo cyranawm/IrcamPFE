@@ -44,7 +44,7 @@ def get_phase(filename, targetLen):
 
 
 
-def regenerate(VAE, dataset, nb, it, scale_param, scaling, log_scaling, downFactor, soundPath, crop = False, initPhase = True):
+def regenerate(VAE, dataset, nb, it, scale_param, scaling, log_scaling, downFactor, soundPath, crop = False, initPhase = True, nameExtension = ''):
     
     targetLen = 25486
     
@@ -87,9 +87,9 @@ def regenerate(VAE, dataset, nb, it, scale_param, scaling, log_scaling, downFact
         if initPhase:
             initPhase = get_phase(dataset.files[i], targetLen)
         
-        name =  str(i)
-        regenerateAudio(originalNSGT, targetLen = targetLen, iterations=it, curName= soundPath+name, initPhase = initPhase, crop = crop)        
-        regenerateAudio(recNSGT, targetLen = targetLen, iterations=it, curName= soundPath + name + '_rec', initPhase = initPhase, crop = crop)
+        filename =  str(i) + nameExtension #to test on various parameters sets
+        regenerateAudio(originalNSGT, targetLen = targetLen, iterations=it, curName= soundPath + filename, initPhase = initPhase, crop = crop)        
+        regenerateAudio(recNSGT, targetLen = targetLen, iterations=it, curName= soundPath + filename + '_rec', initPhase = initPhase, crop = crop)
         
         
 def get_nn(coords, point):
