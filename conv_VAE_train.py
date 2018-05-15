@@ -230,26 +230,26 @@ for epoch in range(nb_epochs):
 #Saving images
     if np.mod(epoch,50) == 0: 
         #from training set
-        fig = plt.figure()
+        fig = plt.figure(figsize = (12,8))
         for idx in range(1,6):
             plt.subplot(2,5,idx)
             inputs = pre_process[idx].view(in_shape[0], in_shape[1])
-            plt.imshow(inputs.clone().cpu())
+            plt.imshow(inputs.clone().cpu().t(), aspect = 'auto')
             plt.subplot(2,5,5+idx)
             output = rec_mu[idx].view(in_shape[0], in_shape[1])
-            plt.imshow(output.clone().cpu().data) #still a variable
-        fig.savefig(results_folder + '/images/reconstructions/train_epoch'+str(epoch)+'.png' )
+            plt.imshow(output.clone().cpu().data.t(), aspect = 'auto') #still a variable
+        fig.savefig(results_folder + '/images/reconstructions/train_epoch'+str(epoch)+'.png', bbox_inches = 'tight')
         
         #from validset
-        fig = plt.figure()
+        fig = plt.figure(figsize = (12,8))
         for idx in range(1,6):
             plt.subplot(2,5,idx)
             inputs = valid_in[idx].view(in_shape[0], in_shape[1])
-            plt.imshow(inputs.clone().cpu())
+            plt.imshow(inputs.clone().cpu().t(), aspect = 'auto')
             plt.subplot(2,5,5+idx)
             output = valid_out[idx].view(in_shape[0], in_shape[1])
-            plt.imshow(output.clone().cpu().data) #still a variable
-        fig.savefig(results_folder + '/images/reconstructions/valid_epoch'+str(epoch)+'.png' )
+            plt.imshow(output.clone().cpu().data.t(), aspect = 'auto') #still a variable
+        fig.savefig(results_folder + '/images/reconstructions/valid_epoch'+str(epoch)+'.png', bbox_inches = 'tight' )
         
 #saving model 
     if np.mod(epoch,200) == 0: 
