@@ -16,6 +16,9 @@ parser = argparse.ArgumentParser(description='model to evaluate')
 parser.add_argument('model', type=str,
                     help='<Required> Choice of the model to evaluate')
 
+parser.add_argument('resfold', type=str,
+                    help='<Required> Folder where the results will be saved')
+
 parser.add_argument('--gpu', type=int, default=1, metavar='N',
                     help='The ID of the GPU to use')
 
@@ -40,6 +43,7 @@ import numpy as np
 import sys
 from skimage.transform import resize
 
+import os
 
 import torch
 from torch.autograd import Variable
@@ -105,6 +109,13 @@ if torch.cuda.is_available():
     vae.cuda()
 vae.eval()
 
+results_folder = args.resfold
+subfolders = ['/images/PCA', '/sounds', '/sounds/line']
+
+for folder in subfolders:
+    if not os.path.isdir(folder):
+        os.makedirs(results_folder + folder)
+    
 
 
 #%%
@@ -123,7 +134,7 @@ if args.soundrec:
     
     nb_rec = args.soundrec
     
-    soundPath = './results/sounds/'
+    soundPath = results_folder + '/sounds/'
     regenerate(vae, dataset, nb_rec, norm_const, normalize, log_scaling, downFactor, soundPath)
 
 if args.soundlines:
@@ -133,7 +144,7 @@ if args.soundlines:
     
     latentCoords = [] 
     nb_samples = 10   
-    soundPath = './results/sounds/line/'
+    soundPath = soundPath + 'line/'
     targetLen = int(1.15583*22050)
     
     for i, raw_input in enumerate(dataset.data):

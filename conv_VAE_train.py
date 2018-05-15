@@ -167,7 +167,7 @@ if not os.path.isdir(results_folder):
 nb_epochs = args.epochs
 vae.train()
 optimizer = optim.Adam(vae.parameters(), lr=0.0001)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=100)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=100, min_lr = 5e-06)
 
 for epoch in range(nb_epochs):
 
