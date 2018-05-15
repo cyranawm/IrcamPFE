@@ -37,6 +37,9 @@ parser.add_argument('--Nwu', type=int, default=100, metavar='N',
 parser.add_argument('--gpu', type=int, default=1, metavar='N',
                     help='The ID of the GPU to use')
 
+parser.add_argument('--checkpoints', action='store_true',
+                    help='save checkpoints each 200 epochs')
+
 
 args = parser.parse_args()
 
@@ -169,6 +172,8 @@ vae.train()
 optimizer = optim.Adam(vae.parameters(), lr=0.0001)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=100, min_lr = 5e-06)
 
+best_valid = 1e8
+
 for epoch in range(nb_epochs):
 
 #BETA WU
@@ -211,7 +216,7 @@ for epoch in range(nb_epochs):
     epoch_size = i+1
     
 #Compute validation loss and scheduler.step()
-    valid_loss, valid_in, valid_out = vae.valid_loss(testloader, beta, use_cuda, last_batch = True)
+    valid_loss, valid_in, valid_out = vae.valid_loss(testloader, beta, use_cuda, last_batch = True)  
     scheduler.step(valid_loss)
     
 #Tensorboard log
@@ -251,11 +256,17 @@ for epoch in range(nb_epochs):
             plt.imshow(output.clone().cpu().data.t(), aspect = 'auto') #still a variable
         fig.savefig(results_folder + '/images/reconstructions/valid_epoch'+str(epoch)+'.png', bbox_inches = 'tight' )
         
-#saving model 
+#saving models
+    #checkpoints
     if np.mod(epoch,200) == 0: 
-        name = results_folder + '/checkpoints/conv_config'+str(args.config) + '_ep' + str(epoch)
-        vae.save(name, use_cuda)
-            
+        if args.checkpoints:
+            name = results_folder + '/checkpoints/conv_config'+str(args.config) + '_ep' + str(epoch)
+            vae.save(name, use_cuda)
+    #bestmodel
+    if valid_loss < best_valid and epoch>300:
+        best_valid = valid_loss
+        name = results_folder + '/checkpoints/conv_config'+str(args.config) + '_ep' + str(epoch) + '_BEST'
+        vae.save(name, use_cuda)        
 #Print stats
     print('[End of epoch %d] \n recon_loss: %.3f \n KLloss: %.3f \n beta : %.3f \n loss: %.3f \n valid_loss: %.3f \n -----------------' %
               (epoch + 1,
