@@ -44,7 +44,7 @@ def get_phase(filename, targetLen):
 
 
 
-def regenerate(VAE, dataset, nb, it, scale_param, scaling, log_scaling, downFactor, soundPath, crop = False):
+def regenerate(VAE, dataset, nb, it, scale_param, scaling, log_scaling, downFactor, soundPath, crop = False, initPhase = True):
     
     targetLen = 25486
     
@@ -84,8 +84,8 @@ def regenerate(VAE, dataset, nb, it, scale_param, scaling, log_scaling, downFact
         recNSGT =unscale_array(recNSGT, scale_param, scaling, log_scaling)
         
         # Now invert (with upsampled version)
-        
-        initPhase = get_phase(dataset.files[i], targetLen)
+        if initPhase:
+            initPhase = get_phase(dataset.files[i], targetLen)
         
         name =  str(i)
         regenerateAudio(originalNSGT, targetLen = targetLen, iterations=it, curName= soundPath+name, initPhase = initPhase, crop = crop)        

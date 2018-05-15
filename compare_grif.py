@@ -122,9 +122,10 @@ for folder in subfolders:
 if args.soundrec:
     
     nb_rec = args.soundrec
-    it= 1000
     soundPath = results_folder + 'sounds/'
-    regenerate(vae, dataset, nb_rec, it, norm_const, normalize, log_scaling, downFactor, soundPath, crop = 0.8)
+    for it in [100,200,300]:
+        for ph in [False, True]:
+            regenerate(vae, dataset, nb_rec, it, norm_const, normalize, log_scaling, downFactor, soundPath, initPhase = ph)
 
 if args.soundlines:
     
@@ -185,10 +186,9 @@ if args.soundlines:
                         phase = nnPhase
                     else:
                         phase = False
-                    regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=it, 
-                                    initPhase = ph, crop = 0.8, curName=soundPath + str(n) + '_' + str(i) + '_' + str(it) + '_ph' + str(ph)
+                    
+                    regenerateAudio(nsgt, sr=22050, targetLen = int(1.15583*22050), iterations=it, initPhase = phase, curName=soundPath + str(n) + '_' + str(i) + '_' + str(it) + '_ph' + str(ph))
     
-
 #%%
 #
 #data = np.load('/Users/cyranaouameur/Desktop/StageIrcam/Code/CodeCyran/results/images/PCA/pca3D_conv_config1_final_data.npy')
@@ -197,12 +197,3 @@ if args.soundlines:
 #npy2scatter(data, col)
 #
 #
-
-
-
-
-
-
-
-
-
