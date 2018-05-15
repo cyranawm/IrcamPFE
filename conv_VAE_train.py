@@ -265,7 +265,7 @@ for epoch in range(nb_epochs):
     #bestmodel
     if valid_loss < best_valid and epoch>300:
         best_valid = valid_loss
-        name = results_folder + '/checkpoints/conv_config'+str(args.config) + '_ep' + str(epoch) + '_BEST'
+        name = results_folder + '/conv_config'+str(args.config) + '_BEST'
         vae.save(name, use_cuda)        
 #Print stats
     print('[End of epoch %d] \n recon_loss: %.3f \n KLloss: %.3f \n beta : %.3f \n loss: %.3f \n valid_loss: %.3f \n -----------------' %
