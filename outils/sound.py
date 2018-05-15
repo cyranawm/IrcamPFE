@@ -86,6 +86,8 @@ def regenerate(VAE, dataset, nb, it, scale_param, scaling, log_scaling, downFact
         # Now invert (with upsampled version)
         if initPhase:
             phase = get_phase(dataset.files[i], targetLen)
+        else:
+            phase = None
         
         filename =  str(i) + nameExtension #to test on various parameters sets
         regenerateAudio(originalNSGT, targetLen = targetLen, iterations=it, curName= soundPath + filename, initPhase = phase, crop = crop)        
