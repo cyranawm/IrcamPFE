@@ -60,7 +60,7 @@ def layers_config(n):
         deconv3 = [4, 1, (6,4), (2,2), (3,0), (0,0)]
         deconv = [deconv1, deconv2, deconv3]
         
-    elif n == 3:
+    elif n == 3: #INCREDIBLY GOOD
         #The conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
         conv1 = [1, 16, (15,10), (5,3), (0,0)]
         conv2 = [16, 32, (15,10), (5,3), (0,0)]
