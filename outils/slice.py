@@ -18,8 +18,9 @@ def slice_and_split(dataDirectory, trainDirectory, testDirectory, sliceDur, trai
     train = files[:int(trainRatio*len(files))]
     test = files[int(trainRatio*len(files)):]
     
-    
+    print("SLICING TRAINSET")
     for file in train:
+        print("SLICING"+file)
         y,sr = librosa.load(os.path.join(dataDirectory,file))
         name = file.split('.')[0]
         fileLen = len(y)
@@ -42,8 +43,9 @@ def slice_and_split(dataDirectory, trainDirectory, testDirectory, sliceDur, trai
                 path = os.path.join(trainDirectory, name + '_slice' + str(i) + '.wav')
                 librosa.output.write_wav(path, curSlice, sr, norm = True)
                 
-                
+    print("SLICING TESTSET")
     for file in test:
+        print("SLICING"+file)
         y,sr = librosa.load(os.path.join(dataDirectory,file))
         name = file.split('.')[0]
         fileLen = len(y)
