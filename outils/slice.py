@@ -14,7 +14,7 @@ import numpy as np
 def slice_and_split(dataDirectory, trainDirectory, testDirectory, sliceDur, trainRatio = 0.8, overlap = None):
     files = [i for i in os.listdir(dataDirectory) if i.endswith('.wav')]
     
-    files = np.permutation(files)
+    files = permutation(files)
     train = files[:int(trainRatio*len(files))]
     test = files[int(trainRatio*len(files)):]
     
@@ -28,7 +28,7 @@ def slice_and_split(dataDirectory, trainDirectory, testDirectory, sliceDur, trai
         
         if overlap is not None:
             i=0
-            stepSize = (float(100 - overlap)/100) * sliceLen
+            stepSize = int((float(100 - overlap)/100) * sliceLen)
             while (i+1)*stepSize <= fileLen :
                 start = i*stepSize
                 curSlice = y[start : start + sliceLen]
@@ -52,7 +52,7 @@ def slice_and_split(dataDirectory, trainDirectory, testDirectory, sliceDur, trai
         
         if overlap is not None:
             i=0
-            stepSize = (float(100 - overlap)/100) * sliceLen
+            stepSize = int((float(100 - overlap)/100) * sliceLen)
             while (i+1)*stepSize <= fileLen :
                 start = i*stepSize
                 curSlice = y[start : start + sliceLen]
@@ -79,7 +79,7 @@ def slice_data(dataDirectory, targetDirectory, sliceDur, overlap = None):
             
             if overlap is not None:
                 i=0
-                stepSize = (float(100 - overlap)/100) * sliceLen
+                stepSize = int((float(100 - overlap)/100) * sliceLen)
                 while (i+1)*stepSize <= fileLen :
                     start = i*stepSize
                     curSlice = y[start : start + sliceLen]
@@ -105,15 +105,24 @@ if __name__ == '__main__':
     parser.add_argument('dataDirectory', type=str,
                         help='Source directory')
     
-    parser.add_argument('targetDirectory', type=str,
-                        help='Destination')
+    parser.add_argument('trainDirectory', type=str,
+                        help='Trainset estination')
     
-    parser.add_argument('sliceDur', type=float,
-                        help= 'Duration of a slice (in seconds)')
+    parser.add_argument('testDirectory', type=str,
+                        help='testset destination')
+    
+    parser.add_argument('--sliceDur', type=float, default = 0.1,
+                        help= 'Duration of a slice (in seconds) default = 0.1')
+    
+    parser.add_argument('--overlap', type=int, default = 75,
+                        help= 'Quantity of overlap (in percent (0 to 100)) default = 75')
+    
+    parser.add_argument('--ratio', type=float, default = 0.8,
+                        help= 'splitting ratio (default 0.8)')
     
     args = parser.parse_args()
     
-    slice_data(args.dataDirectory, args.targetDirectory, args.sliceDur)
+    slice_and_split(args.dataDirectory, args.trainDirectory, args.testDirectory, args.sliceDur, args.ratio, args.overlap)
     
     
     
