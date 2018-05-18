@@ -117,7 +117,7 @@ class TemporalEncoder(nn.Module):
                 
         #Final convolution
         self.outputConv = nn.Conv1d(in_channels=residual_channels,
-                                         out_channels=nbClasses,
+                                         out_channels=1,
                                          kernel_size=1,
                                          bias=True)
         

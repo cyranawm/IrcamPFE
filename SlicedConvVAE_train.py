@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Apr 19 14:30:07 2018
+Created on Fri May 18 16:49:20 2018
 
 @author: cyranaouameur
 """
@@ -92,41 +92,48 @@ normalize = 'gaussian'
 
 task = args.task
 
-dataset = importDataset(targetDur = 1.15583)
-
-dataset.metadata['instrument'] = np.array(dataset.metadata['instrument']) #to array
-dataset.data = np.abs(dataset.data) # to real positive array
-
-if task == 'kicks':
-    print('TRAINING ONLY ON KICKS')
-    dataset.data = dataset.data[dataset.metadata['instrument']==0]    
-    dataset.metadata['instrument'] = dataset.metadata['instrument'][dataset.metadata['instrument']==0]    
+train_dataset = importDataset(base_path = "/fast-1/SlicedDrums/train")
+test_dataset = importDataset(base_path = "/fast-1/SlicedDrums/test")
 
 
-
-#downsample by a given factor
-nbFrames, nbBins = dataset.get(0).shape
-downFactor = args.downsample
 downsampled = []
-for img in dataset.data:
-    downsampled.append(resize(img, (int(nbFrames / downFactor), nbBins), mode='constant'))
-in_shape = (int(nbFrames / downFactor), nbBins)
+for dataset in [train_dataset, test_dataset]:
+    
+    dataset.metadata['instrument'] = np.array(dataset.metadata['instrument']) #to array
+    dataset.data = np.abs(dataset.data) # to real positive array
+    
+    #if task == 'kicks':
+    #    print('TRAINING ONLY ON KICKS')
+    #    dataset.data = dataset.data[dataset.metadata['instrument']==0]    
+    #    dataset.metadata['instrument'] = dataset.metadata['instrument'][dataset.metadata['instrument']==0]    
+    
+    #concatenate both arrays
+    
+    #downsample by a given factor
+    nbFrames, nbBins = dataset.get(0).shape
+    downFactor = args.downsample
+    for img in dataset.data:
+        downsampled.append(resize(img, (int(nbFrames / downFactor), nbBins), mode='constant'))
+    in_shape = (int(nbFrames / downFactor), nbBins)
 
 #Scale data
-dataset.data, norm_const = scale_array(downsampled, log_scaling, normalize) 
+concatenated, norm_const = scale_array(downsampled, log_scaling, normalize) 
+
+train_dataset.data = concatenated[:len(train_dataset.data)]
+test_dataset.data = concatenated[len(train_dataset.data):]
 
 #Constrcut partitions (train and validation sets)
-dataset.constructPartition('instrument', ['train','valid'], [0.8, 0.2])
+#dataset.constructPartition('instrument', ['train','valid'], [0.8, 0.2])
 
 #Compute the best mb_size for valid_set
-len_val = len(dataset.partitions['valid'])
+len_val = len(test_dataset.names)
 valid_mb = [x for x in range(len_val+1) if x != 0 and len_val%x == 0 and x<150][-1]
 
 mb_size = args.mb_size
 
 #Create the Loaders
-trainloader = DataLoader(dataset, mb_size, 'instrument', partition = 'train') 
-testloader = DataLoader(dataset, valid_mb, 'instrument', partition = 'valid')
+trainloader = DataLoader(train_dataset, mb_size, 'instrument') 
+testloader = DataLoader(test_dataset, valid_mb, 'instrument')
 
 #TODO : to torch tensor?
 
@@ -159,7 +166,7 @@ if use_tensorboard:
     
 #%%Training routine
     
-model_name = 'conv_config'+str(args.config)
+model_name = 'slicedconv_config'+str(args.config)
 results_folder = './results/'+model_name
 if not os.path.isdir(results_folder):
     os.makedirs(results_folder)
@@ -259,12 +266,12 @@ for epoch in range(nb_epochs):
     #checkpoints
     if np.mod(epoch,200) == 0: 
         if args.checkpoints:
-            name = results_folder + '/checkpoints/conv_config'+str(args.config) + '_ep' + str(epoch)
+            name = results_folder + '/checkpoints/sliceconv_config'+str(args.config) + '_ep' + str(epoch)
             vae.save(name, use_cuda)
     #bestmodel
     if valid_loss < best_valid and epoch>300:
         best_valid = valid_loss
-        name = results_folder + '/conv_config'+str(args.config) + '_BEST'
+        name = results_folder + '/slicedconv_config'+str(args.config) + '_BEST'
         vae.save(name, use_cuda)        
 #Print stats
     print('[End of epoch %d] \n recon_loss: %.3f \n KLloss: %.3f \n beta : %.3f \n loss: %.3f \n valid_loss: %.3f \n -----------------' %
@@ -277,6 +284,6 @@ for epoch in range(nb_epochs):
 
 #5. TRAINING FINISHED
     
-name = results_folder + '/conv_config'+str(args.config) + '_final'
+name = results_folder + '/slicedconv_config'+str(args.config) + '_final'
 vae.save(name)
 print("MERCI DE VOTRE PATIENCE MAITRE. \n J'AI FINI L'ENTRAINEMENT ET JE NE SUIS QU'UNE VULGAIRE MACHINE ENTIEREMENT SOUMISE.")
