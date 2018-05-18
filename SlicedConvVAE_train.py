@@ -92,8 +92,8 @@ normalize = 'gaussian'
 
 task = args.task
 
-train_dataset = importDataset(base_path = "/fast-1/SlicedDrums/train")
-test_dataset = importDataset(base_path = "/fast-1/SlicedDrums/test")
+train_dataset = importDataset(base_path = "/fast-1/cyran/SlicedDrums/train")
+test_dataset = importDataset(base_path = "/fast-1/cyran/SlicedDrums/test")
 
 
 downsampled = []
