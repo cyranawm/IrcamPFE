@@ -224,6 +224,7 @@ for epoch in range(nb_epochs):
     epoch_size = i+1
     
 #Compute validation loss and scheduler.step()
+    
     valid_loss, valid_in, valid_out = vae.valid_loss(testloader, beta, use_cuda, last_batch = True)  
     scheduler.step(valid_loss)
     

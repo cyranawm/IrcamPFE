@@ -268,6 +268,8 @@ class Conv_VAE(nn.Module):
         
         valid_loss = 0.0
         
+        self.eval()
+        
         for i, data in enumerate(validset):
             #1. get the inputs and wrap them in Variable
             inputs, labels = data
@@ -287,6 +289,8 @@ class Conv_VAE(nn.Module):
             valid_loss += loss.data[0]
             
         valid_loss /= i+1
+        
+        self.train()
         
         if last_batch:
             last_batch_in = inputs
