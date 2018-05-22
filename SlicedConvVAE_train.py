@@ -100,7 +100,7 @@ downsampled = []
 for dataset in [train_dataset, test_dataset]:
     
     dataset.metadata['instrument'] = np.array(dataset.metadata['instrument']) #to array
-    dataset.data = np.abs(dataset.data) # to real positive array
+    dataset.data = np.abs(dataset.data) + 1e-7 # to real positive array
     
     #if task == 'kicks':
     #    print('TRAINING ONLY ON KICKS')
@@ -126,8 +126,10 @@ test_dataset.data = concatenated[len(train_dataset.data):]
 #dataset.constructPartition('instrument', ['train','valid'], [0.8, 0.2])
 
 #Compute the best mb_size for valid_set
-len_val = len(test_dataset.names)
+len_val = len(test_dataset.files)
 valid_mb = [x for x in range(len_val+1) if x != 0 and len_val%x == 0 and x<150][-1]
+if valid_mb == 1:
+    valid_mb = 100
 
 mb_size = args.mb_size
 
