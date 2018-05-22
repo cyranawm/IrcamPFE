@@ -16,6 +16,9 @@ parser = argparse.ArgumentParser(description='model to evaluate')
 parser.add_argument('model', type=str,
                     help='<Required> Choice of the model to evaluate')
 
+parser.add_argument('datafold', type=str,
+                    help='<Required> Folder containing the data')
+
 parser.add_argument('resfold', type=str,
                     help='<Required> Folder where the results will be saved (ends with /)')
 
@@ -70,12 +73,13 @@ except:
 if torch.cuda.is_available():
     torch.cuda.set_device(args.gpu)
     print('USING CUDA ON GPU'+str(torch.cuda.current_device()))
-    path = '/fast-1/DrumsDataset'
-else:
-    path = '/Users/cyranaouameur/Desktop/StageIrcam/Code/CodeCyran/datasets/DummyDrumsCropped'
-
+    
+path = args.datafold
+if path[-1]=='/':
+    path = path[:-1]
+    
 print('IMPORT DATA')
-dataset = importDataset(base_path = path, targetDur = 1.15583)
+dataset = importDataset(base_path = path)
 
 dataset.metadata['instrument'] = np.array(dataset.metadata['instrument']) #to array
 #phases = np.angle(dataset.data)
