@@ -106,12 +106,13 @@ if __name__ == '__main__':
 
     parser.add_argument('dataDirectory', type=str,
                         help='Source directory')
+
     
     parser.add_argument('trainDirectory', type=str,
-                        help='Trainset estination')
+                        help='Trainset destination (ends with/)')
     
     parser.add_argument('testDirectory', type=str,
-                        help='testset destination')
+                        help='testset destination (ends with /)')
     
     parser.add_argument('--sliceDur', type=float, default = 0.1,
                         help= 'Duration of a slice (in seconds) default = 0.1')
@@ -124,7 +125,11 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    slice_and_split(args.dataDirectory, args.trainDirectory, args.testDirectory, args.sliceDur, args.ratio, args.overlap)
+    #slice_and_split(args.dataDirectory, args.trainDirectory, args.testDirectory, args.sliceDur, args.ratio, args.overlap)
     
+    instruments = ['Kicks', 'Snares', 'Claps']
+    
+    for cat in instruments:
+        slice_and_split(args.dataDirectory+cat, args.trainDirectory+cat, args.testDirectory+cat, args.sliceDur, args.ratio, args.overlap)
     
     

@@ -89,6 +89,21 @@ def layers_config(n):
         deconv2 = [16, 1, (5,4), (2,2), (0,0), (0,0)]
         deconv = [deconv1, deconv2]
         
+    elif n == 5:#for sliced data
+        #The conv Layers: [in_channels, out_channels, kernel_size, stride, padding]
+        conv1 = [1, 8, (3,5), (2,2), (0,0)]
+        conv2 = [8, 16, (3,5), (2,2), (0,0)]
+        conv = [conv1, conv2]
+        
+        #The MLP hidden Layers : [[in_dim,hlayer1_dim], [hlayer1_dim,hlayer2_dim], ...] 
+        h_dims = [[11200, 512]]
+        
+        #The Deconv Layers: [in_channels, out_channels, kernel_size, stride, padding, output_padding]
+        deconv1 = [16, 8, (3,5), (2,2), (0,0), (0,0)]
+        deconv2 = [8, 4, (3,5), (2,2), (1,2), (0,0)]
+        deconv3 = [4, 1, (3,6), (1,1), (0,0), (0,0)]
+        deconv = [deconv1, deconv2, deconv3]
+        
     return conv, h_dims, deconv
 
 
