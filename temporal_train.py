@@ -270,10 +270,10 @@ for epoch in range(nb_epochs):
             for idx in range(1,6):
                 plt.subplot(5,2,2*idx-1)
                 inputs = pre_process[idx].view(in_shape[0], in_shape[1])
-                plt.imshow(inputs.clone().cpu().t(), aspect = 'auto')
+                plt.imshow(inputs.clone().cpu(), aspect = 'auto')
                 plt.subplot(5,2,2*idx)
                 output = x_rec[idx].view(in_shape[0], in_shape[1])
-                plt.imshow(output.clone().cpu().data.t(), aspect = 'auto') #still a variable
+                plt.imshow(output.clone().cpu().data, aspect = 'auto') #still a variable
             fig.savefig(results_folder + '/images/reconstructions/train_epoch'+str(epoch)+'.png', bbox_inches = 'tight')
             
             #from validset
@@ -281,10 +281,10 @@ for epoch in range(nb_epochs):
             for idx in range(1,6):
                 plt.subplot(5,2,2*idx-1)
                 inputs = valid_in[idx].view(in_shape[0], in_shape[1])
-                plt.imshow(inputs.clone().cpu().t(), aspect = 'auto')
+                plt.imshow(inputs.clone().cpu(), aspect = 'auto')
                 plt.subplot(5,2,2*idx)
                 output = valid_out[idx].view(in_shape[0], in_shape[1])
-                plt.imshow(output.clone().cpu().data.t(), aspect = 'auto') #still a variable
+                plt.imshow(output.clone().cpu().data, aspect = 'auto') #still a variable
             fig.savefig(results_folder + '/images/reconstructions/valid_epoch'+str(epoch)+'.png', bbox_inches = 'tight' )
            
             

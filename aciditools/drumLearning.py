@@ -9,7 +9,7 @@ from .asynchronous.task import AsynchronousTask
 #import gc
 
 
-def importDataset(base_path = '/fast-1/DrumsDataset', transform = 'nsgt-cqt', targetDur = None):
+def importDataset(base_path = '/fast-1/datasets/DrumsDataset', transform = 'nsgt-cqt', targetDur = None):
     audioOptions = {
       "dataDirectory":base_path+'/data',              
       "dataPrefix": base_path, 
