@@ -60,25 +60,25 @@ class MuLaw(object):
         
         return output
     
-    def to_int(self, x_mu):
+    def to_int(self, x):
         if isinstance(x, np.ndarray):
             output = np.zeros((1,self.qc))
-            for i in range(x_mu.shape[1]):
-                idx = np.argmax(x_mu[:,i])
+            for i in range(x.shape[1]):
+                idx = np.argmax(x[:,i])
                 output[i] = idx
         
         elif isinstance(x, (torch.Tensor, torch.LongTensor)):
             if isinstance(x, torch.LongTensor):
                 x = x.float()
             output = torch.zeros((1, self.qc))
-            for i in range(x_mu.size()[1]):
-                idx = torch.argmax(x_mu[:,i])
+            for i in range(x.size()[1]):
+                idx = torch.argmax(x[:,i])
                 output[i] = idx
             
         return output
             
         
-    def decode(self, x_mu)
+    def decode(self, x_mu):
         """
         Args:
             x_mu (FloatTensor/LongTensor or ndarray)
