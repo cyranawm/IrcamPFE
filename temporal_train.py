@@ -98,7 +98,7 @@ if use_cuda and args.gpu >= 0:
 #task = args.task
 
 #import raw data
-dataset = importDataset(base_path = '/Users/cyranaouameur/Desktop/StageIrcam/Code/CodeCyran/datasets/DummyDrumsCropped', transform = 'raw')
+dataset = importDataset(transform = 'raw')
 
 dataset.metadata['instrument'] = np.array(dataset.metadata['instrument']) #to array
 dataset.data = np.array(dataset.data) # to array
