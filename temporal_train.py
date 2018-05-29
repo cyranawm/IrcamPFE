@@ -98,6 +98,9 @@ if use_cuda and args.gpu >= 0:
 #task = args.task
 
 #import raw data
+    
+print('LOADING DATA')
+
 dataset = importDataset(transform = 'raw')
 
 dataset.metadata['instrument'] = np.array(dataset.metadata['instrument']) #to array
@@ -111,6 +114,8 @@ for s in dataset.data:
 mulaw = MuLaw(256)
 final_data = []
 
+print('MULAW ENCODING')
+
 for i,entry in enumerate(dataset.data) :
     entry = mulaw(entry)
     slices = []
@@ -122,8 +127,8 @@ for i,entry in enumerate(dataset.data) :
 dataset.data = np.array(final_data)
 
 #Constrcut partitions (train and validation sets)
+print('CREATING LOADERS')
 dataset.constructPartition('instrument', ['train','valid'], [0.8, 0.2])
-
 
 #Compute the best mb_size for valid_set
 len_val = len(dataset.partitions['valid'])
@@ -190,6 +195,8 @@ optimizer = optim.Adam(vae.parameters(), lr=0.0001)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=100, min_lr = 5e-06)
 
 best_valid = 1e8
+
+print('***Training Started***')
 
 for epoch in range(nb_epochs):
 
