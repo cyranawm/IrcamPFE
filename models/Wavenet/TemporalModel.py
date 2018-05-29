@@ -38,6 +38,11 @@ class TemporalModel(nn.Module):
         self.kernel_size = kernel_size
         self.dtype = dtype
         
+        if not hasattr(self, 'constructor'):
+            self.constructor = {'nbLayers':nbLayers, 'nbBlocks':nbBlocks, 'zDim':zDim, 'dilation_channels':dilation_channels, 
+                                'residual_channels':residual_channels, 'nbClasses':nbClasses, 'kernel_size': kernel_size, 
+                                'dtype':dtype, 'bias':bias, 'args':args, 'kwargs':kwargs} # remind construction arguments for easy load/save
+       
                 
         #Input convolution to create channels
         self.inputConv = nn.Conv1d(in_channels=nbClasses,
@@ -129,7 +134,66 @@ class TemporalModel(nn.Module):
         kl_loss = 0.5*(-z_logvar+torch.exp(z_logvar)+z_mu.pow(2)-1.) # prior is unit gaussian here
         kl_loss = torch.mean(torch.sum(kl_loss,1))
         
-        loss = recon + kl_loss
-        return loss, recon, kl_loss
+        return recon, kl_loss
+    
+    def save(self, filename, *args, **kwargs):
+        if self.useCuda:
+            state_dict = self.state_dict()
+            for i, k in state_dict.items():
+                state_dict[i] = k.cpu()
+        else:
+            state_dict = self.state_dict()
+        constructor = dict(self.constructor)
+        save = {'state_dict':state_dict, 'init_args':constructor, 'class':self.__class__}
+        for k,v in kwargs.items():
+            save[k] = v
+        torch.save(save, filename)
+        
+            
+    @classmethod
+    def load(cls, pickle):
+        init_args = pickle['init_args']
+        for k,v in init_args['kwargs'].items():
+            init_args[k] = v
+        del init_args['kwargs']
+        vae = cls(**pickle['init_args'])
+        vae.load_state_dict(pickle['state_dict'])
+        return vae
+        
+    def valid_loss(self, validset, beta, use_cuda, last_batch = False):
+        
+        valid_loss = 0.0
+        
+        self.eval()
+        
+        for i, data in enumerate(validset):
+            #1. get the inputs and wrap them in Variable
+            inputs, labels = data
+            inputs, labels = torch.from_numpy(inputs).float(), torch.from_numpy(labels)
+            if use_cuda:
+                inputs = inputs.cuda()
+            #inputs = inputs.unsqueeze(1)
+            x, labels = Variable(inputs), Variable(labels)
+            
+            #2. Forward data
+            x_rec, z_mu, z_logvar = self.forward(x)
+    
+            #3. Compute losses (+validation loss)
+            recon_loss, kl_loss = self.B_loss(x, x_rec, z_mu, z_logvar)
+            loss = recon_loss + beta*kl_loss
+            
+            valid_loss += loss.data[0]
+            
+        valid_loss /= i+1
+        
+        self.train()
+        
+        if last_batch:
+            last_batch_in = inputs
+            last_batch_out = x_rec
+            return valid_loss, last_batch_in, last_batch_out
+        
+        else :
+            return valid_loss
         
         

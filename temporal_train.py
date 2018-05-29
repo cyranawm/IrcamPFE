@@ -71,7 +71,7 @@ from torch.autograd import Variable
 
 from outils.scaling import scale_array
 from models.Wavenet.TemporalModel import TemporalModel
-from outils.mulaw import MuLawEncoding, 
+from outils.mulaw import MuLaw 
 
 
 sys.path.append('./aciditools/')
