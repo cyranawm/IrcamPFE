@@ -108,7 +108,7 @@ for s in dataset.data:
     s /= np.max(np.abs(s))
 
 #compute mu-law
-mulaw = MuLawEncoding(256)
+mulaw = MuLaw(256)
 final_data = []
 
 for i,entry in enumerate(dataset.data) :
@@ -265,7 +265,7 @@ for epoch in range(nb_epochs):
                 inputs = pre_process[idx].view(in_shape[0], in_shape[1])
                 plt.imshow(inputs.clone().cpu().t(), aspect = 'auto')
                 plt.subplot(5,2,2*idx)
-                output = rec_mu[idx].view(in_shape[0], in_shape[1])
+                output = x_rec[idx].view(in_shape[0], in_shape[1])
                 plt.imshow(output.clone().cpu().data.t(), aspect = 'auto') #still a variable
             fig.savefig(results_folder + '/images/reconstructions/train_epoch'+str(epoch)+'.png', bbox_inches = 'tight')
             
