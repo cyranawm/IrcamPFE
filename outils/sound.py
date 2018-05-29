@@ -136,7 +136,4 @@ def create_line(a, b, nb_steps):
     discrete_line = np.transpose(discrete_line)
     return discrete_line        
         
-    
-    
-
 

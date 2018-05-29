@@ -9,7 +9,7 @@ from .asynchronous.task import AsynchronousTask
 #import gc
 
 
-def importDataset(base_path = '/fast-1/DrumsDataset', targetDur = None):
+def importDataset(base_path = '/fast-1/DrumsDataset', transform = 'nsgt-cqt', targetDur = None):
     audioOptions = {
       "dataDirectory":base_path+'/data',              
       "dataPrefix": base_path, 
@@ -17,7 +17,7 @@ def importDataset(base_path = '/fast-1/DrumsDataset', targetDur = None):
       "analysisDirectory":base_path + '/analysis',# Root to place (and find) the transformed data
       "importCallback":None,                                  # Function to perform import of data
       "transformCallback":None,                               # Function to transform data (can be a list)
-      "transformName":'nsgt-cqt',                            # Name of the imported transform
+      "transformName":transform,                            # Name of the imported transform
       "tasks":['instrument'],                                      # Tasks to import
       "taskCallback":None,                                    # Function to import task metadata
       "verbose":True,                                         # Be verbose or not
@@ -35,15 +35,16 @@ def importDataset(base_path = '/fast-1/DrumsDataset', targetDur = None):
     print('[Compute transforms]')
     transformList, transformParameters= audioSet.getTransforms();
     transformOptions = dict(audioOptions)
-    transformOptions["transformTypes"] = ['nsgt-cqt']
-    transformOptions["transformNames"] = ['nsgt-cqt']
+    transformOptions["transformTypes"] = ['nsgt-cqt', 'raw']
+    transformOptions["transformNames"] = ['nsgt-cqt', 'raw']
     transformOptions['forceRecompute'] = False
     
-    transformParameters = [transformParameters]
+    transformParameters = [transformParameters, dict(transformParameters)]
     if targetDur is not None:
         transformParameters[0]['targetDuration'] = targetDur
-#    if downsampleFactor is not None:
-#        transformParameters[0]['downsampleFactor'] = downsampleFactor
+        
+    transformParameters[1]['grainSize'] = int(22050*0.1)
+    transformParameters[1]['grainHop'] = int(0.25 * 22050*0.2)
     
     transformOptions['transformParameters'] = transformParameters
     audioSet.computeTransforms(None, transformOptions, padding=False)

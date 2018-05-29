@@ -20,7 +20,6 @@ class TemporalModel(nn.Module):
                  residual_channels=32,
                  zDim = 64,
                  nbClasses=256,
-                 output_length=32,
                  kernel_size=2,
                  dtype=torch.FloatTensor,
                  bias=False,
@@ -51,7 +50,6 @@ class TemporalModel(nn.Module):
                                      dilation_channels,
                                      residual_channels,                 
                                      nbClasses,
-                                     output_length,
                                      kernel_size,
                                      dtype,
                                      bias,
@@ -64,10 +62,10 @@ class TemporalModel(nn.Module):
                                          kernel_size=1,
                                          bias=True)
  
-        self.enc_linear_mu = nn.Linear(1600,zDim) #TODO : complete
-        self.enc_linear_logvar = nn.Linear(1600,zDim) #TODO : complete
+        self.enc_linear_mu = nn.Linear(2205,zDim) #TODO : complete
+        self.enc_linear_logvar = nn.Linear(2205,zDim) #TODO : complete
         
-        self.dec_linear = nn.Linear(zDim,1600) #TODO : complete
+        self.dec_linear = nn.Linear(zDim,2205) #TODO : complete
         
         self.dec_startConv = nn.Conv1d(in_channels=1,
                                          out_channels=residual_channels,
@@ -79,7 +77,6 @@ class TemporalModel(nn.Module):
                                      dilation_channels,
                                      residual_channels,                 
                                      nbClasses,
-                                     output_length,
                                      kernel_size,
                                      dtype,
                                      bias,

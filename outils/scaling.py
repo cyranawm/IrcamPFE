@@ -3,7 +3,7 @@ import numpy as np
 import torch
 
 
-def scale_array(raw_data,log_scaling,scaling):
+def scale_array(raw_data,log_scaling,scaling = None):
     
     if log_scaling:
         raw_data = np.log(raw_data)
