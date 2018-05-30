@@ -116,13 +116,8 @@ final_data = []
 
 print('MULAW ENCODING')
 
-for i,entry in enumerate(dataset.data) :
-    entry = mulaw(entry)
-    slices = []
-    for j, slice in enumerate(entry):
-        slice = mulaw.categorical(slice)
-        slices.append(slice)
-    final_data.append(np.array(slices))
+for i in range(len(dataset.data)):
+    final_data.append(mulaw(dataset.data[i]))
     
 dataset.data = np.array(final_data)
 
@@ -221,16 +216,16 @@ for epoch in range(nb_epochs):
         pre_process, labels = torch.from_numpy(raw_inputs).float(), torch.from_numpy(labels)
         if use_cuda:
             pre_process = pre_process.cuda()
-        #pre_process = pre_process.unsqueeze(1)
-        x, labels = Variable(pre_process), Variable(labels)
+        x = pre_process.unsqueeze(1)
+        x, labels = Variable(x), Variable(labels)
         
         
         #2. Forward data
         x_rec, z_mu, z_logvar = vae.forward(x)
 
         #3. Compute losses (+validation loss)
-        print(x.size(), x_rec.size(), z_mu.size(), z_logvar.size())
-        recon_loss, kl_loss = vae.B_loss(x, x_rec, z_mu, z_logvar)
+        #print(x.size(), x_rec.size(), z_mu.size(), z_logvar.size())
+        recon_loss, kl_loss = vae.loss(x, x_rec, z_mu, z_logvar)
         loss = recon_loss + beta*kl_loss
         
         epoch_loss += loss.data[0]
@@ -267,24 +262,26 @@ for epoch in range(nb_epochs):
     if np.mod(epoch,50) == 0: 
             #from training set
             fig = plt.figure(figsize = (12,8))
-            for idx in range(1,6):
-                plt.subplot(5,2,2*idx-1)
-                inputs = pre_process[idx].view(in_shape[0], in_shape[1])
-                plt.imshow(inputs.clone().cpu(), aspect = 'auto')
-                plt.subplot(5,2,2*idx)
-                output = x_rec[idx].view(in_shape[0], in_shape[1])
-                plt.imshow(output.clone().cpu().data, aspect = 'auto') #still a variable
+            for idx in range(1,5):
+                plt.subplot(4,2,2*idx-1)
+                inputs = mulaw.decode(raw_inputs[idx])
+                plt.plot(inputs.clone().cpu())
+                plt.subplot(4,2,2*idx)
+                output = mulaw.to_int(x_rec[idx])
+                output = mulaw.decode(output)
+                plt.plot(output.clone().cpu().numpy()) #still a variable
             fig.savefig(results_folder + '/images/reconstructions/train_epoch'+str(epoch)+'.png', bbox_inches = 'tight')
             
             #from validset
             fig = plt.figure(figsize = (12,8))
-            for idx in range(1,6):
-                plt.subplot(5,2,2*idx-1)
-                inputs = valid_in[idx].view(in_shape[0], in_shape[1])
-                plt.imshow(inputs.clone().cpu(), aspect = 'auto')
-                plt.subplot(5,2,2*idx)
-                output = valid_out[idx].view(in_shape[0], in_shape[1])
-                plt.imshow(output.clone().cpu().data, aspect = 'auto') #still a variable
+            for idx in range(1,5):
+                plt.subplot(4,2,2*idx-1)
+                inputs = mulaw.decode(valid_in[idx])
+                plt.plot(inputs.clone().cpu())
+                plt.subplot(4,2,2*idx)
+                output = mulaw.to_int(valid_out[idx])
+                output = mulaw.decode(output)
+                plt.plot(output.clone().cpu().numpy()) #still a variable
             fig.savefig(results_folder + '/images/reconstructions/valid_epoch'+str(epoch)+'.png', bbox_inches = 'tight' )
            
             

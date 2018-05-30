@@ -11,6 +11,8 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from models.Wavenet.EncoderDecoder import TemporalEncoder, TemporalDecoder
 
+import numpy as np
+
 class TemporalModel(nn.Module):
     
     def __init__(self,
@@ -45,7 +47,7 @@ class TemporalModel(nn.Module):
        
                 
         #Input convolution to create channels
-        self.inputConv = nn.Conv1d(in_channels=nbClasses,
+        self.inputConv = nn.Conv1d(in_channels=1,
                                    out_channels=residual_channels,
                                    kernel_size=1,
                                    bias=bias)
@@ -123,13 +125,15 @@ class TemporalModel(nn.Module):
         z_mu, z_logvar = self.encode(mb)
         z = self.reparametrize(z_mu, z_logvar)
         x_rec= self.decode(z)
-        x_rec = F.softmax(x_rec, dim = 1)
+        x_rec = F.log_softmax(x_rec, dim = 1)
         return x_rec, z_mu, z_logvar
     
     
-    def B_loss(self, x, x_rec, z_mu, z_logvar):
+    def loss(self, x, x_rec, z_mu, z_logvar):
         
-        recon = F.binary_cross_entropy(x_rec, x, size_average=True)
+        list_in = torch.cat([i for i in x.squeeze(1)]).long()
+        list_out = torch.cat([i for i in x_rec], dim = 1).t()
+        recon = F.nll_loss(list_out, list_in, size_average=True)
         
         kl_loss = 0.5*(-z_logvar+torch.exp(z_logvar)+z_mu.pow(2)-1.) # prior is unit gaussian here
         kl_loss = torch.mean(torch.sum(kl_loss,1))
@@ -168,18 +172,19 @@ class TemporalModel(nn.Module):
         
         for i, data in enumerate(validset):
             #1. get the inputs and wrap them in Variable
-            inputs, labels = data
-            inputs, labels = torch.from_numpy(inputs).float(), torch.from_numpy(labels)
+            raw_in, labels = data
+            raw_in = np.concatenate([i for i in raw_in])
+            torch_in, labels = torch.from_numpy(raw_in).float(), torch.from_numpy(labels)
             if use_cuda:
-                inputs = inputs.cuda()
-            #inputs = inputs.unsqueeze(1)
-            x, labels = Variable(inputs), Variable(labels)
+                torch_in = torch_in.cuda()
+            x = torch_in.unsqueeze(1)
+            x, labels = Variable(x), Variable(labels)
             
             #2. Forward data
             x_rec, z_mu, z_logvar = self.forward(x)
     
             #3. Compute losses (+validation loss)
-            recon_loss, kl_loss = self.B_loss(x, x_rec, z_mu, z_logvar)
+            recon_loss, kl_loss = self.loss(x, x_rec, z_mu, z_logvar)
             loss = recon_loss + beta*kl_loss
             
             valid_loss += loss.data[0]
@@ -189,7 +194,7 @@ class TemporalModel(nn.Module):
         self.train()
         
         if last_batch:
-            last_batch_in = inputs
+            last_batch_in = raw_in
             last_batch_out = x_rec
             return valid_loss, last_batch_in, last_batch_out
         

@@ -62,18 +62,19 @@ class MuLaw(object):
     
     def to_int(self, x):
         if isinstance(x, np.ndarray):
-            output = np.zeros((1,self.qc))
+            output = np.zeros(x.shape[1])
             for i in range(x.shape[1]):
                 idx = np.argmax(x[:,i])
-                output[i] = idx
+                output[i] = int(idx)
+            output = np.array(output)
         
         elif isinstance(x, (torch.Tensor, torch.LongTensor)):
             if isinstance(x, torch.LongTensor):
                 x = x.float()
-            output = torch.zeros((1, self.qc))
+            output = torch.zeros(x.size()[1])
             for i in range(x.size()[1]):
                 idx = torch.argmax(x[:,i])
-                output[i] = idx
+                output[i] = int(idx)
             
         return output
             
