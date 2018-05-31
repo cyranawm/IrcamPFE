@@ -65,6 +65,8 @@ import sys
 
 import os
 
+import gc
+
 import torch
 import torch.optim as optim
 from torch.autograd import Variable
@@ -126,12 +128,13 @@ print('CREATING LOADERS')
 dataset.constructPartition('instrument', ['train','valid'], [0.8, 0.2])
 
 #Compute the best mb_size for valid_set
-len_val = len(dataset.partitions['valid'])
-valid_mb = [x for x in range(len_val+1) if x != 0 and len_val%x == 0 and x<150][-1]
-if valid_mb == 1:
-    valid_mb = 100
-
 mb_size = args.mb_size
+len_val = len(dataset.partitions['valid'])
+valid_mb = [x for x in range(len_val+1) if x != 0 and len_val%x == 0 and x<mb_size][-1]
+if valid_mb == 1:
+    valid_mb = mb_size
+
+
 #mb_size = 3
 
 #Create the Loaders
@@ -240,11 +243,30 @@ for epoch in range(nb_epochs):
     
     epoch_size = i+1
     
-#Compute validation loss and scheduler.step()
     
+    # Saving sounds/waveforms
+    if np.mod(epoch,50) == 0: 
+            #from training set
+            fig = plt.figure(figsize = (12,8))
+            for idx in range(1,5):
+                plt.subplot(4,2,2*idx-1)
+                inputs = mulaw.decode(raw_inputs[idx])
+                plt.plot(inputs.clone().cpu())
+                plt.subplot(4,2,2*idx)
+                output = mulaw.to_int(x_rec[idx])
+                output = mulaw.decode(output)
+                plt.plot(output.clone().cpu().numpy()) #still a variable
+            fig.savefig(results_folder + '/images/reconstructions/train_epoch'+str(epoch)+'.png', bbox_inches = 'tight')
+            
+    raw_inputs, pre_process, x, x_rec = None,None,None,None
+    gc.collect()
+
+
+#Compute validation loss and scheduler.step()
+  
     valid_loss, valid_in, valid_out = vae.valid_loss(testloader, beta, use_cuda, last_batch = True)  
     scheduler.step(valid_loss)
-#%%
+
 #Tensorboard log
     if use_tensorboard:
         vae.writer.add_scalars('data/AvgLosses', {'Loss': epoch_loss/epoch_size,
@@ -260,17 +282,6 @@ for epoch in range(nb_epochs):
   
 # Saving sounds/waveforms
     if np.mod(epoch,50) == 0: 
-            #from training set
-            fig = plt.figure(figsize = (12,8))
-            for idx in range(1,5):
-                plt.subplot(4,2,2*idx-1)
-                inputs = mulaw.decode(raw_inputs[idx])
-                plt.plot(inputs.clone().cpu())
-                plt.subplot(4,2,2*idx)
-                output = mulaw.to_int(x_rec[idx])
-                output = mulaw.decode(output)
-                plt.plot(output.clone().cpu().numpy()) #still a variable
-            fig.savefig(results_folder + '/images/reconstructions/train_epoch'+str(epoch)+'.png', bbox_inches = 'tight')
             
             #from validset
             fig = plt.figure(figsize = (12,8))
@@ -304,6 +315,9 @@ for epoch in range(nb_epochs):
                beta,
                epoch_loss/epoch_size, 
                valid_loss))
+    
+    valid_in, valid_out = None,None
+    gc.collect()
 
 #5. TRAINING FINISHED
     
