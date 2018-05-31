@@ -251,7 +251,7 @@ for epoch in range(nb_epochs):
             for idx in range(1,5):
                 plt.subplot(4,2,2*idx-1)
                 inputs = mulaw.decode(raw_inputs[idx])
-                plt.plot(inputs.clone().cpu())
+                plt.plot(inputs)
                 plt.subplot(4,2,2*idx)
                 output = mulaw.to_int(x_rec[idx])
                 output = mulaw.decode(output)
@@ -288,7 +288,7 @@ for epoch in range(nb_epochs):
             for idx in range(1,5):
                 plt.subplot(4,2,2*idx-1)
                 inputs = mulaw.decode(valid_in[idx])
-                plt.plot(inputs.clone().cpu())
+                plt.plot(inputs)
                 plt.subplot(4,2,2*idx)
                 output = mulaw.to_int(valid_out[idx])
                 output = mulaw.decode(output)
