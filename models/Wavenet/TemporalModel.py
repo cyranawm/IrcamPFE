@@ -173,7 +173,7 @@ class TemporalModel(nn.Module):
         for i, data in enumerate(validset):
             #1. get the inputs and wrap them in Variable
             raw_in, labels = data
-            raw_in = np.concatenate([i for i in raw_in])
+            raw_in = np.concatenate([i for i in raw_in])[:10*len(raw_in)]
             torch_in, labels = torch.from_numpy(raw_in).float(), torch.from_numpy(labels)
             if use_cuda:
                 torch_in = torch_in.cuda()

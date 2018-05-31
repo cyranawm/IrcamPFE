@@ -215,7 +215,7 @@ for epoch in range(nb_epochs):
         #1. get the inputs and wrap them in Variable
         raw_inputs, labels = data
         raw_inputs = np.concatenate([i for i in raw_inputs])
-        raw_inputs = np.random.permutation(raw_inputs)
+        raw_inputs = np.random.permutation(raw_inputs)[:10*mb_size]
         pre_process, labels = torch.from_numpy(raw_inputs).float(), torch.from_numpy(labels)
         if use_cuda:
             pre_process = pre_process.cuda()
