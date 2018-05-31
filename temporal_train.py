@@ -183,7 +183,7 @@ model_name = 'TemporalModel_' +str(nbBlocks) +'_' + str(nbLayers)
 results_folder = './results/'+model_name
 if not os.path.isdir(results_folder):
     os.makedirs(results_folder)
-    os.makedirs(results_folder + '/sound/reconstructions')
+    os.makedirs(results_folder + '/images/reconstructions')
     os.makedirs(results_folder + '/checkpoints')
 
 nb_epochs = args.epochs
