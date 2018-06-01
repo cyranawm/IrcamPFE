@@ -10,6 +10,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from models.Wavenet.EncoderDecoder import TemporalEncoder, TemporalDecoder
+from outils.scaling import unscale_array
+
 
 import numpy as np
 
@@ -96,6 +98,13 @@ class TemporalModel(nn.Module):
                                    kernel_size=1,
                                    bias=bias)
         
+        #Init params with XAVIER (weights) or ZERO (biases)
+        for name, param in self.named_parameters():
+            if ('weight' in name) and (not 'norm' in name):
+                nn.init.xavier_normal_(param)
+            elif ('bias' in name) and (not 'norm' in name):
+                nn.init.constant_(param,0)
+        
         
     def encode(self, x):
         h = self.inputConv(x)
@@ -108,7 +117,7 @@ class TemporalModel(nn.Module):
     
     def reparametrize(self, mu, logvar):
         eps = Variable(torch.randn(mu.size()), requires_grad = False)
-        if torch.cuda.is_available():
+        if self.useCuda:
             eps = eps.cuda()
         return mu+torch.exp(logvar/2)*eps
     
@@ -123,16 +132,23 @@ class TemporalModel(nn.Module):
     
     def forward(self, mb):
         z_mu, z_logvar = self.encode(mb)
+        print(z_mu, z_logvar)
         z = self.reparametrize(z_mu, z_logvar)
+        print(z)
         x_rec= self.decode(z)
+        #print(x_rec, F.softmax(x_rec, dim=1))
         x_rec = F.log_softmax(x_rec, dim = 1)
         return x_rec, z_mu, z_logvar
     
     
-    def loss(self, x, x_rec, z_mu, z_logvar):
+    def loss(self, x, x_rec, z_mu, z_logvar, scaling):
         
         list_in = torch.cat([i for i in x.squeeze(1)]).long()
+        norm_const,scaling,log_scaling = scaling[0], scaling[1], scaling[2]
+        list_in = unscale_array(list_in,norm_const,scaling,log_scaling)
+        list_in = list_in.int()
         list_out = torch.cat([i for i in x_rec], dim = 1).t()
+        #print(list_in.size(), list_out.size())
         recon = F.nll_loss(list_out, list_in, size_average=True)
         
         kl_loss = 0.5*(-z_logvar+torch.exp(z_logvar)+z_mu.pow(2)-1.) # prior is unit gaussian here
@@ -164,7 +180,7 @@ class TemporalModel(nn.Module):
         vae.load_state_dict(pickle['state_dict'])
         return vae
         
-    def valid_loss(self, validset, beta, use_cuda, last_batch = False):
+    def valid_loss(self, validset, beta, use_cuda, scaling, last_batch = False):
         
         valid_loss = 0.0
         
@@ -184,7 +200,7 @@ class TemporalModel(nn.Module):
             x_rec, z_mu, z_logvar = self.forward(x)
     
             #3. Compute losses (+validation loss)
-            recon_loss, kl_loss = self.loss(x, x_rec, z_mu, z_logvar)
+            recon_loss, kl_loss = self.loss(x, x_rec, z_mu, z_logvar, scaling)
             loss = recon_loss + beta*kl_loss
             
             valid_loss += loss.data[0]

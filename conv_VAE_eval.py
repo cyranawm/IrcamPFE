@@ -117,7 +117,7 @@ results_folder = args.resfold
 subfolders = ['images/PCA', 'sounds', 'sounds/line']
 
 for folder in subfolders:
-    if not os.path.isdir(folder):
+    if not os.path.isdir(results_folder + folder):
         os.makedirs(results_folder + folder)
     
 
