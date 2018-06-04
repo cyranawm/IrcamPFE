@@ -27,12 +27,11 @@ class TemporalModel(nn.Module):
                  kernel_size=2,
                  dtype=torch.FloatTensor,
                  bias=False,
-                 use_cuda = torch.cuda.is_available(),
                  *args, **kwargs):
         
         super(TemporalModel,self).__init__()
         
-        self.useCuda = use_cuda
+        self.useCuda = torch.cuda.is_available()
         self.nbLayers = nbLayers
         self.nbBlocks = nbBlocks
         self.zDim = zDim
@@ -132,9 +131,7 @@ class TemporalModel(nn.Module):
     
     def forward(self, mb):
         z_mu, z_logvar = self.encode(mb)
-        print(z_mu, z_logvar)
         z = self.reparametrize(z_mu, z_logvar)
-        print(z)
         x_rec= self.decode(z)
         #print(x_rec, F.softmax(x_rec, dim=1))
         x_rec = F.log_softmax(x_rec, dim = 1)
@@ -146,7 +143,7 @@ class TemporalModel(nn.Module):
         list_in = torch.cat([i for i in x.squeeze(1)]).long()
         norm_const,scaling,log_scaling = scaling[0], scaling[1], scaling[2]
         list_in = unscale_array(list_in,norm_const,scaling,log_scaling)
-        list_in = list_in.int()
+        list_in = list_in.int().long()
         list_out = torch.cat([i for i in x_rec], dim = 1).t()
         #print(list_in.size(), list_out.size())
         recon = F.nll_loss(list_out, list_in, size_average=True)

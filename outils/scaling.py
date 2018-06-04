@@ -146,7 +146,7 @@ def scale_multiarray(raw_data,log_scaling,scaling = None):
             
         elif scaling == 'gaussian': # 0 mean and unit variance 
             data_mean = np.mean(concat)
-            concat -= data_mean
+            concat = concat - data_mean
             data_weight = np.std(concat)
             
             raw_data -= data_mean

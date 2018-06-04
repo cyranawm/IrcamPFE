@@ -230,7 +230,7 @@ for epoch in range(nb_epochs):
         x_rec, z_mu, z_logvar = vae.forward(x)
 
         #3. Compute losses (+validation loss)
-        print(x.size(), x_rec.size(), z_mu.size(), z_logvar.size())
+        #print(x.size(), x_rec.size(), z_mu.size(), z_logvar.size())
         recon_loss, kl_loss = vae.loss(x, x_rec, z_mu, z_logvar, scaling)
         loss = recon_loss + beta*kl_loss
         
