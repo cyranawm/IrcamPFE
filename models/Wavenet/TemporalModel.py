@@ -61,7 +61,7 @@ class TemporalModel(nn.Module):
                                      kernel_size,
                                      dtype,
                                      bias,
-                                     use_cuda,
+                                     self.useCuda,
                                      *args, **kwargs)
         
         #Final encoder-side convolution
@@ -88,7 +88,7 @@ class TemporalModel(nn.Module):
                                      kernel_size,
                                      dtype,
                                      bias,
-                                     use_cuda,
+                                     self.useCuda,
                                      *args, **kwargs)
         
         #Input convolution to create channels
