@@ -123,9 +123,9 @@ for i in range(len(dataset.data)):
     
 dataset.data = np.array(final_data)
 log_scaling = False
-normalize = 'unitnorm'
+normalize = 'gaussian'
 dataset.data, norm_const = scale_multiarray(dataset.data, log_scaling, normalize)
-scaling = norm_const,normalize,log_scaling
+scaling = [norm_const,normalize,log_scaling]
 #Constrcut partitions (train and validation sets)
 print('CREATING LOADERS')
 dataset.constructPartition('instrument', ['train','valid'], [0.8, 0.2])
@@ -253,7 +253,7 @@ for epoch in range(nb_epochs):
             fig = plt.figure(figsize = (12,8))
             for idx in range(1,5):
                 plt.subplot(4,2,2*idx-1)
-                inputs = mulaw.decode(unscale_array(raw_inputs[idx],norm_const,log_scaling, normalize))
+                inputs = mulaw.decode(unscale_array(raw_inputs[idx],norm_const, normalize, log_scaling))
                 plt.plot(inputs)
                 plt.subplot(4,2,2*idx)
                 output = mulaw.to_int(x_rec[idx])
@@ -290,7 +290,7 @@ for epoch in range(nb_epochs):
             fig = plt.figure(figsize = (12,8))
             for idx in range(1,5):
                 plt.subplot(4,2,2*idx-1)
-                inputs = mulaw.decode(unscale_array(valid_in[idx],norm_const,log_scaling, normalize))
+                inputs = mulaw.decode(unscale_array(valid_in[idx],norm_const, normalize, log_scaling))
                 plt.plot(inputs)
                 plt.subplot(4,2,2*idx)
                 output = mulaw.to_int(valid_out[idx])
