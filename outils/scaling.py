@@ -7,7 +7,7 @@ def scale_array(raw_data,log_scaling,scaling = None):
 
     constants = None
     
-    if isinstance(x, np.ndarray):
+    if isinstance(raw_data, np.ndarray):
                     
         if log_scaling:
             raw_data = np.log(raw_data)
@@ -40,7 +40,7 @@ def scale_array(raw_data,log_scaling,scaling = None):
             constants = [data_mean, data_weight]
 
     
-    elif isinstance(x, (torch.Tensor, torch.LongTensor)):
+    elif isinstance(raw_data, (torch.Tensor, torch.LongTensor)):
         if log_scaling:
             raw_data = torch.log(raw_data)
         
