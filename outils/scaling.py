@@ -110,8 +110,52 @@ def unscale_array(scaled_data,data_scales,scaling,log_scaling):
 
 
 
+def scale_multiarray(raw_data,log_scaling,scaling = None):
+
+    constants = None
+    
+    if isinstance(raw_data, np.ndarray):
+        
+        concat = np.concatenate([element for element in raw_data])
+                    
+        if log_scaling:
+            raw_data = np.log([i for i in raw_data])
+            
+            
+        if scaling == '0centering': # 0 centred    
+            data_mean = np.mean(concat)
+            concat -= data_mean
+            data_weight = np.max(np.abs(concat))
+            
+            raw_data -= data_mean
+            scaled_data = raw_data / data_weight # 0 centred in [-1,1]
+            
+            constants = [data_mean, data_weight]
+    
+             
+        elif scaling == 'unitnorm': # stretched [in -1,1]       
+            data_min = np.min(concat)
+            concat -= data_min
+            data_weight = 2 / np.max(concat)
+            
+            raw_data -= data_min 
+            scaled_data = raw_data * data_weight - 1
+            
+            constants = [data_min, data_weight]
+            
+            
+        elif scaling == 'gaussian': # 0 mean and unit variance 
+            data_mean = np.mean(concat)
+            concat -= data_mean
+            data_weight = np.std(concat)
+            
+            raw_data -= data_mean
+            scaled_data = raw_data/data_weight
+    
+            constants = [data_mean, data_weight]
 
 
+    return scaled_data, constants
 
 
 #def scale_tensor(raw_data,log_scaling,scaling):

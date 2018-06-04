@@ -71,7 +71,7 @@ import torch
 import torch.optim as optim
 from torch.autograd import Variable
 
-from outils.scaling import scale_array, unscale_array
+from outils.scaling import scale_array, unscale_array, scale_multiarray
 from models.Wavenet.TemporalModel import TemporalModel
 from outils.mulaw import MuLaw 
 
@@ -124,7 +124,7 @@ for i in range(len(dataset.data)):
 dataset.data = np.array(final_data)
 log_scaling = False
 normalize = 'unitnorm'
-dataset.data, norm_const = scale_array(dataset.data, log_scaling, normalize)
+dataset.data, norm_const = scale_multiarray(dataset.data, log_scaling, normalize)
 scaling = norm_const,normalize,log_scaling
 #Constrcut partitions (train and validation sets)
 print('CREATING LOADERS')
