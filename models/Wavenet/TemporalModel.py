@@ -27,7 +27,7 @@ class TemporalModel(nn.Module):
                  kernel_size=2,
                  dtype=torch.FloatTensor,
                  bias=False,
-                 use_cuda = False,
+                 use_cuda = torch.cuda.is_available(),
                  *args, **kwargs):
         
         super(TemporalModel,self).__init__()
